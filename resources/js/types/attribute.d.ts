@@ -36,12 +36,6 @@ export type AttributeGroup = {
 };
 
 export type AttributeData = {
-    name: {
-        field_type: string;
-        value: Name;
-    };
-    description?: {
-        field_type: string;
-        value: Name;
-    };
+    name: Name;
+    description?: Name;
 };

@@ -3,6 +3,7 @@ import { Brand } from "./brand";
 import { CustomerGroup } from "./customer";
 import { Discount } from "./discount";
 import { Product } from "./product";
+import { Url } from "./url";
 
 export type Collection = {
     id: number;
@@ -18,6 +19,7 @@ export type Collection = {
     brands?: Brand[];
     customer_groups?: CustomerGroup[];
     products?: Product[];
+    default_url?: Url;
 }
 
 export type CollectionGroup = {

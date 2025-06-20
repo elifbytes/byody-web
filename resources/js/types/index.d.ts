@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
+import { Collection } from './collection';
 
 export interface Auth {
     user: User;
@@ -28,6 +29,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    collections: Collection[];
     [key: string]: unknown;
 }
 
