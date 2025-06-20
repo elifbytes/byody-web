@@ -20,4 +20,22 @@ return [
         'path' => env('FALLBACK_IMAGE_PATH', null),
     ],
 
+    'transformations' => [
+        'zoom' => [
+            'width' => 500,
+            'height' => 500,
+        ],
+        'large' => [
+            'width' => 800,
+            'height' => 800,
+        ],
+        'medium' => [
+            'width' => 400,
+            'height' => 400,
+        ],
+        'small' => [
+            'width' => 200,
+            'height' => 200,
+        ],
+    ],
 ];

@@ -8,19 +8,15 @@
         "framework"
     ],
     "license": "MIT",
-    "repositories": [{
-        "type": "path",
-        "url": "packages/*",
-        "symlink": true
-    }],
     "require": {
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "laravel/workos": "^0.1.0",
-        "tightenco/ziggy": "^2.4",
-        "lunarphp/lunarmono": "*"
+        "lunarphp/lunar": "^1.0.0-beta",
+        "lunarphp/table-rate-shipping": "^1.0@beta",
+        "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
