@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Banner;
 use Lunar\Base\StandardMediaDefinitions;
 
 return [
@@ -11,6 +12,7 @@ return [
         'product' => StandardMediaDefinitions::class,
         'product-option' => StandardMediaDefinitions::class,
         'product-option-value' => StandardMediaDefinitions::class,
+        'banner' => StandardMediaDefinitions::class,
     ],
 
     'collection' => 'images',

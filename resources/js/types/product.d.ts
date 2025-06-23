@@ -1,6 +1,7 @@
 import { Name } from '.';
 import { AttributeData } from './attribute';
 import { Media } from './media';
+import { Price } from './price';
 
 export type Product = {
     id: number;
@@ -15,6 +16,9 @@ export type Product = {
     has_variants: boolean;
     images?: Media[];
     product_options?: ProductOption[];
+    thumbnail?: Media;
+    prices?: Price[];
+    price?: string;
 };
 
 export type ProductType = {

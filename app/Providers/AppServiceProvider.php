@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Resources\BannerResource;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Shipping\ShippingPlugin;
@@ -20,6 +21,16 @@ class AppServiceProvider extends ServiceProvider
                 ->plugins([
                     new ShippingPlugin,
                 ])
+                ->resources([
+                    BannerResource::class,
+                ])->navigationGroups([
+                    'Content',
+                    'Catalog',
+                    'Sales',
+                    'Shipping',
+                    'Settings',
+                ])
+
         )->register();
     }
 

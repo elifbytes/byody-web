@@ -2,6 +2,7 @@ import { AttributeData } from "./attribute";
 import { Brand } from "./brand";
 import { CustomerGroup } from "./customer";
 import { Discount } from "./discount";
+import { Media } from "./media";
 import { Product } from "./product";
 import { Url } from "./url";
 
@@ -20,6 +21,7 @@ export type Collection = {
     customer_groups?: CustomerGroup[];
     products?: Product[];
     default_url?: Url;
+    thumbnail?: Media;
 }
 
 export type CollectionGroup = {

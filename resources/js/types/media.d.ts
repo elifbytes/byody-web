@@ -14,4 +14,5 @@ export type Media = {
     custom_properties?: string;
     responsive_images?: string;
     order_column?: number;
+    original_url?: string;
 }
