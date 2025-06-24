@@ -2,6 +2,7 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
@@ -14,13 +15,18 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { useDebounce } from '@/hooks/use-debounce';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
+import searchService from '@/services/search-service';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
+import { Product } from '@/types/product';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
+import Cart from './cart';
 
 const mainNavItems: NavItem[] = [
     {
@@ -34,7 +40,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'About',
         href: '/about',
-    }
+    },
 ];
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
@@ -47,7 +53,27 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth, collections } = page.props;
 
+    const [openSearch, setOpenSearch] = useState<boolean>(false);
+    const [searchProducts, setSearchProducts] = useState<Product[]>([]);
+
+    const [search, setSearch] = useState<string>('');
+    const debouncedsearch = useDebounce<string>(search, 500);
+
     const getInitials = useInitials();
+
+    const getSearchProducts = useCallback(async () => {
+        const searchResult = await searchService.getProducts(debouncedsearch);
+        setSearchProducts(searchResult);
+    }, [debouncedsearch]);
+
+    useEffect(() => {
+        if (debouncedsearch.trim() === '') {
+            setSearchProducts([]);
+            return;
+        }
+        getSearchProducts();
+    }, [debouncedsearch, getSearchProducts]);
+
     return (
         <>
             <div className="border-b border-sidebar-border/80">
@@ -128,11 +154,41 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <div className="relative flex items-center space-x-1">
-                            <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
-                            </Button>
-                        </div>
+                        <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer" onClick={() => setOpenSearch(true)}>
+                            <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                        </Button>
+                        <CommandDialog open={openSearch} onOpenChange={setOpenSearch} shouldFilter={false}>
+                            <CommandInput placeholder="Search our products..." value={search} onValueChange={setSearch} />
+                            <CommandList>
+                                {searchProducts.length <= 0 ? (
+                                    <CommandEmpty>No products found.</CommandEmpty>
+                                ) : (
+                                    <CommandGroup heading="Results">
+                                        {searchProducts.map((product) => (
+                                            <Link key={product.id} href={route('product.show', product.default_url?.slug)}>
+                                                <CommandItem
+                                                    onSelect={() => {
+                                                        setOpenSearch(false);
+                                                    }}
+                                                >
+                                                    <div className="flex items-center space-x-2">
+                                                        {product.thumbnail && (
+                                                            <img
+                                                                src={product.thumbnail.original_url}
+                                                                alt={product.attribute_data?.name.en}
+                                                                className="h-6 w-6 rounded"
+                                                            />
+                                                        )}
+                                                        <span>{product.attribute_data?.name.en}</span>
+                                                    </div>
+                                                </CommandItem>
+                                            </Link>
+                                        ))}
+                                    </CommandGroup>
+                                )}
+                            </CommandList>
+                        </CommandDialog>
+                        <Cart />
                         {auth.user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

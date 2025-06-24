@@ -57,6 +57,7 @@ export type ProductVariant = {
     min_quantity: number;
     images?: Media[];
     values?: ProductOptionValue[];
+    product?: Product;
 };
 
 export type ProductOption = {

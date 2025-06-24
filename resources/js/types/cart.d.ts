@@ -3,6 +3,7 @@ import { Country } from './country';
 import { Currency } from './currency';
 import { Customer } from './customer';
 import { Discount } from './discount';
+import { ProductVariant } from './product';
 
 export type Cart = {
     id: number;
@@ -22,6 +23,7 @@ export type Cart = {
     addresses?: CartAddress[];
     shipping_address?: CartAddress;
     billing_address?: CartAddress;
+    calculation?: CartCalculation;
 };
 
 export type CartLine = {
@@ -32,6 +34,8 @@ export type CartLine = {
     quantity: number;
     meta?: string;
     discounts?: Discount[];
+    calculation?: CartCalculation;
+    purchasable?: ProductVariant;
 };
 
 export type CartAddress = {
@@ -56,3 +60,13 @@ export type CartAddress = {
     meta?: string;
     country?: Country;
 };
+
+export type CartCalculation = {
+    total: string;
+    subTotal: string;
+    subTotalDiscounted: string;
+    taxTotal: string;
+    discountTotal: string;
+    unitPrice?: string;
+    unitPriceInclTax?: string;
+}

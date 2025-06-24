@@ -1,20 +1,53 @@
+import InputError from '@/components/input-error';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
 import { SharedData } from '@/types';
 import { Media } from '@/types/media';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
+import { Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 interface ProductPageProps {
     product: Product;
 }
 function ProductPage({ product }: ProductPageProps) {
     const { auth } = usePage<SharedData>().props;
+    
     const [selectedMedia, setSelectedMedia] = useState<Media | undefined>(product.media?.[0]);
     const [selectedValues, setSelectedValues] = useState<ProductOptionValue[]>();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
+    const [quantity, setQuantity] = useState<number>(1);
+
+    const { post, processing, errors, transform } = useForm({
+        product_variant_id: selectedVariant?.id,
+        quantity: quantity,
+    });
+
+    const handleAddToCart = () => {
+        if (!selectedVariant) return;
+        // Transform the form data to include selected variant and quantity
+        transform((data) => ({
+            ...data,
+            product_variant_id: selectedVariant.id,
+            quantity: quantity,
+        }));
+        post(route('cart.store'), {
+            preserveScroll: true,
+            onSuccess: () => {
+                setQuantity(1); // Reset quantity after adding to cart
+                setSelectedValues([]); // Clear selected values
+                setSelectedVariant(undefined); // Clear selected variant
+                toast.success('Product added to cart successfully!');
+            },
+            onError: (error) => {
+                console.error('Error adding to cart:', error);
+                toast.error('Failed to add product to cart. Please try again.');
+            },
+        });
+    };
 
     const productOptions: ProductOption[] = useMemo(() => {
         const optionsMap = new Map<number, ProductOption>();
@@ -114,9 +147,25 @@ function ProductPage({ product }: ProductPageProps) {
                         </div>
                     )}
                     {auth.user ? (
-                        <Button className="mt-4 w-full rounded" disabled={!selectedVariant}>
-                            Add to Cart
-                        </Button>
+                        <>
+                            <div className="mt-4 flex items-center justify-center">
+                                <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}>
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <div className="mx-10">{quantity}</div>
+                                <Button
+                                    disabled={!selectedVariant}
+                                    onClick={() => setQuantity((prev) => Math.min(prev + 1, selectedVariant?.stock || 1))}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <Button className="mt-4 w-full rounded" disabled={!selectedVariant || processing} onClick={handleAddToCart}>
+                                {processing ? 'Adding to cart...' : 'Add to Cart'}
+                            </Button>
+                            <InputError>{errors.product_variant_id}</InputError>
+                            <InputError>{errors.quantity}</InputError>
+                        </>
                     ) : (
                         <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('login')}>
                             Please log in to add to cart
