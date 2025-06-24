@@ -20,7 +20,7 @@ class HomeController extends Controller
             ->orderBy('order_column')
             ->get();
 
-        $newArrivals = Product::with(['thumbnail'])
+        $newArrivals = Product::with(['thumbnail', 'defaultUrl'])
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();

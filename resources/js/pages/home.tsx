@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Banner } from '@/types/banner';
 import { Collection } from '@/types/collection';
 import { Product } from '@/types/product';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import Autoplay from 'embla-carousel-autoplay';
 
 interface HomeProps {
@@ -47,19 +47,22 @@ export default function Home({ banners, collections, newArrivals }: HomeProps) {
                         <CarouselContent>
                             {newArrivals.map((product) => (
                                 <CarouselItem key={product.id} className="relative basis-1/3 md:basis-1/4 lg:basis-1/5 xl:basis-1/6">
-                                    <div className="hover:bg-gray-100 hover:cursor-pointer">
+                                    <Link
+                                        className="hover:bg-gray-100"
+                                        href={product.default_url ? route('product.show', product.default_url.slug) : '#'}
+                                    >
                                         <AspectRatio ratio={1 / 1}>
                                             <img
                                                 src={product.thumbnail?.original_url}
                                                 alt={product.attribute_data?.name.en}
-                                                className="h-full w-full object-cover rounded-sm"
+                                                className="h-full w-full rounded-sm object-cover"
                                             />
                                         </AspectRatio>
                                         <div className="px-2 py-1">
                                             <p className="line-clamp-2">{product.attribute_data?.name.en}</p>
                                             <p className="text-sm">{product.prices?.length ? product.price : '-'}</p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </CarouselItem>
                             ))}
                         </CarouselContent>

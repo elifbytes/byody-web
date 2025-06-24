@@ -2,6 +2,7 @@ import { Name } from '.';
 import { AttributeData } from './attribute';
 import { Media } from './media';
 import { Price } from './price';
+import { Url } from './url';
 
 export type Product = {
     id: number;
@@ -14,11 +15,12 @@ export type Product = {
     variants?: ProductVariant[];
     variant?: ProductVariant;
     has_variants: boolean;
-    images?: Media[];
+    media?: Media[];
     product_options?: ProductOption[];
     thumbnail?: Media;
     prices?: Price[];
     price?: string;
+    default_url?: Url;
 };
 
 export type ProductType = {
@@ -71,4 +73,5 @@ export type ProductOptionValue = {
     product_option_id: number;
     name: Name;
     position: number;
+    option?: ProductOption;
 }
