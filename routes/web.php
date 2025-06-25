@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
@@ -15,6 +17,9 @@ Route::middleware([
     ValidateSessionWithWorkOS::class,
 ])->group(function () {
     Route::resource('cart', CartController::class);
+    Route::resource('order', OrderController::class);
+
+    Route::post('customer/update', [ProfileController::class, 'updateCustomer'])->name('customer.profile.update');
 });
 
 require __DIR__ . '/settings.php';

@@ -58,6 +58,7 @@ export type ProductVariant = {
     images?: Media[];
     values?: ProductOptionValue[];
     product?: Product;
+    prices?: Price[];
 };
 
 export type ProductOption = {

@@ -1,3 +1,4 @@
+import { Address } from "./address";
 import { AttributeData } from "./attribute";
 
 export type Customer = {
@@ -10,6 +11,7 @@ export type Customer = {
     meta?: string;
     attribute_data?: string;
     account_ref?: string;
+    addresses?: Address[];
 }
 
 export type CustomerGroup = {

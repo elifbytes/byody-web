@@ -1,10 +1,11 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getCartLinesPrice, getProductVariantPrice } from '@/lib/price';
 import { SharedData } from '@/types';
-import { useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { Minus, Plus, ShoppingCartIcon, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 import { NotificationBadge } from './ui/notification-badge';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
@@ -19,6 +20,8 @@ function Cart() {
         cart_line_id: 0,
         quantity: 0,
     });
+
+    console.log('Cart data:', auth.cart);
 
     const handleUpdateQuantity = (lineId: number, quantity: number) => {
         transform((data) => ({
@@ -67,7 +70,7 @@ function Cart() {
                 <SheetHeader className="border-b border-neutral-200">
                     <SheetTitle>Cart</SheetTitle>
                 </SheetHeader>
-                <ScrollArea className="h-[calc(100%-300px)] w-full px-4">
+                <ScrollArea className="h-[calc(100%-200px)] w-full px-4">
                     {auth.cart?.lines?.map((line) => (
                         <div key={line.id} className="grid grid-cols-[1fr_3fr] gap-2 border-b border-neutral-200 py-2">
                             <div>
@@ -88,7 +91,7 @@ function Cart() {
                                         </Badge>
                                     ))}
                                 </div>
-                                <span className="text-sm font-medium">{`${line.quantity} x ${line.calculation?.unitPrice}`}</span>
+                                <span className="text-sm font-medium">{`${line.quantity} x ${getProductVariantPrice(line.purchasable!)}`}</span>
                             </div>
                             <div className="col-span-2 flex items-center justify-end space-x-2">
                                 <Button
@@ -130,25 +133,12 @@ function Cart() {
                 {auth.cart?.lines && auth.cart.lines.length > 0 && (
                     <SheetFooter>
                         <div className="grid grid-cols-2 items-center gap-4">
-                            <p className="text-xs font-medium">Subtotal:</p>
-                            <p className="text-right text-xs font-bold">{auth.cart?.calculation?.subTotal}</p>
-                            <p className="text-xs font-medium">Discount:</p>
-                            <p className="text-right text-xs font-bold">{auth.cart?.calculation?.discountTotal}</p>
-                            <p className="text-xs font-medium">Tax:</p>
-                            <p className="text-right text-xs font-bold">{auth.cart?.calculation?.taxTotal}</p>
                             <p className="text-sm font-medium">Total:</p>
-                            <p className="text-right text-lg font-bold">{auth.cart?.calculation?.total}</p>
+                            <p className="text-right text-lg font-bold">{getCartLinesPrice(auth.cart.lines)}</p>
                         </div>
-                        <Button
-                            className="mt-4 w-full"
-                            disabled={auth.cart?.lines?.length === 0 || processing}
-                            onClick={() => {
-                                // Handle checkout
-                                console.log('Proceed to checkout');
-                            }}
-                        >
+                        <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('order.create')}>
                             Checkout
-                        </Button>
+                        </Link>
                     </SheetFooter>
                 )}
             </SheetContent>

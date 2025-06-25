@@ -129,6 +129,7 @@ function ProductPage({ product }: ProductPageProps) {
                             <div className="grid grid-cols-3 gap-2 lg:grid-cols-4">
                                 {option.values?.map((value) => (
                                     <Toggle
+                                        variant="outline"
                                         key={value.id}
                                         pressed={selectedValues?.some((v) => v.id === value.id) || false}
                                         onPressedChange={() => handleSelectValue(value)}

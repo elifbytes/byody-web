@@ -7,7 +7,10 @@ export type Price = {
     currency_id: number;
     priceable_type: string;
     priceable_id: number;
-    price: number;
+    price: {
+        currency: Currency;
+        value: number;
+    };
     compare_price?: number;
     min_quantity: number;
     currency?: Currency;

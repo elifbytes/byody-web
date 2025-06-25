@@ -43,27 +43,27 @@ class HandleInertiaRequests extends Middleware
         if ($user) {
             $cart = $user->carts()->first();
             if ($cart) {
-                $cart->load(['lines.purchasable.product.thumbnail', 'lines.purchasable.values']);
-                $cart->calculate();
-                $cart->calculation = [
-                    'total' => $cart->total->formatted(),
-                    'subTotal' => $cart->subTotal->formatted(),
-                    'subTotalDiscounted' => $cart->subTotalDiscounted->formatted(),
-                    'taxTotal' => $cart->taxTotal->formatted(),
-                    'discountTotal' => $cart->discountTotal->formatted(),
-                ];
+                $cart->load(['lines.purchasable.product.thumbnail', 'lines.purchasable.values', 'lines.purchasable.prices']);
+                // $cart->calculate();
+                // $cart->calculation = [
+                //     'total' => $cart->total->formatted(),
+                //     'subTotal' => $cart->subTotal->formatted(),
+                //     'subTotalDiscounted' => $cart->subTotalDiscounted->formatted(),
+                //     'taxTotal' => $cart->taxTotal->formatted(),
+                //     'discountTotal' => $cart->discountTotal->formatted(),
+                // ];
 
-                foreach ($cart->lines as $cartLine) {
-                    $cartLine->calculation = [
-                        'total' => $cartLine->total->formatted(),
-                        'subTotal' => $cartLine->subTotal->formatted(),
-                        'subTotalDiscounted' => $cartLine->subTotalDiscounted->formatted(),
-                        'taxTotal' => $cartLine->taxAmount->formatted(),
-                        'discountTotal' => $cartLine->discountTotal->formatted(),
-                        'unitPrice' => $cartLine->unitPrice->formatted(),
-                        'unitPriceInclTax' => $cartLine->unitPriceInclTax->formatted(),
-                    ];
-                }
+                // foreach ($cart->lines as $cartLine) {
+                //     $cartLine->calculation = [
+                //         'total' => $cartLine->total->formatted(),
+                //         'subTotal' => $cartLine->subTotal->formatted(),
+                //         'subTotalDiscounted' => $cartLine->subTotalDiscounted->formatted(),
+                //         'taxTotal' => $cartLine->taxAmount->formatted(),
+                //         'discountTotal' => $cartLine->discountTotal->formatted(),
+                //         'unitPrice' => $cartLine->unitPrice->formatted(),
+                //         'unitPriceInclTax' => $cartLine->unitPriceInclTax->formatted(),
+                //     ];
+                // }
             }
         }
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
