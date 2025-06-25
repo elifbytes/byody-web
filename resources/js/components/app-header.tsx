@@ -76,7 +76,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     return (
         <>
-            <div className="border-b border-sidebar-border/80">
+            <div className="border-b border-sidebar-border/80 sticky top-0 z-50 bg-background">
                 <div className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div>
                 <div className="flex h-16 items-center justify-between px-4">
                     <div className="flex items-center">

@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
-use Illuminate\Http\Request;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
+use Lunar\Facades\Pricing;
 use Lunar\Models\Collection;
-use Lunar\Models\OrderLine;
 use Lunar\Models\Product;
+use Lunar\Models\ProductVariant;
 
 class HomeController extends Controller
 {
@@ -21,41 +22,62 @@ class HomeController extends Controller
             ->get();
 
         $newArrivals = Product::with(['thumbnail', 'defaultUrl'])
-            ->orderBy('created_at', 'desc')
+            ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
+            ->join('prices', function (JoinClause $join) {
+                $join->on('product_variants.id', '=', 'prices.priceable_id')
+                    ->where('prices.priceable_type', (new ProductVariant)->getMorphClass());
+            })
+            ->join('currencies', 'prices.currency_id', '=', 'currencies.id')
+            ->select(
+                'products.*',
+                DB::raw(
+                    'TRUNC(
+                        (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
+                    ), 2) as price'
+                )
+            )
+            ->groupBy('products.id')
+            ->orderBy('products.created_at', 'desc')
             ->take(10)
             ->get();
 
-        foreach ($newArrivals as $product) {
-            $product->price = $product->prices->first()->price->formatted() ?? null;
-        }
+        // foreach ($newArrivals as $product) {
+        //     $product->price = Pricing::for($product->variants->first())->get()->base->price->formatted();
+        // }
 
         $collections = Collection::query()
             ->with(['products', 'thumbnail'])
             ->orderBy('_lft')
             ->get();
 
-        // $bestSellers = OrderLine::query()->with(['currency'])->whereHas('order', function ($relation) {
-        //     $relation->whereBetween('placed_at', [
-        //         now()->subYear()->startOfDay(),
-        //         now()->endOfDay(),
-        //     ]);
-        // })->select(
-        //     DB::RAW('MAX(id) as id'),
-        //     DB::RAW('MAX(order_id) as order_id'),
-        //     DB::RAW('COUNT(id) as quantity'),
-        //     DB::RAW('SUM(sub_total) as sub_total'),
-        //     DB::RAW('MAX(description) as description'),
-        //     'identifier',
-        // )->groupBy('identifier', 'purchasable_id')
-        //     ->whereType('physical')
-        //     ->orderBy('quantity', 'desc')
-        //     ->take(10)
-        //     ->get();
+        $bestSellers = Product::query()
+            ->with(['thumbnail', 'defaultUrl', 'variants'])
+            ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
+            ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
+            ->join('prices', function (JoinClause $join) {
+                $join->on('product_variants.id', '=', 'prices.priceable_id')
+                    ->where('prices.priceable_type', (new ProductVariant)->getMorphClass());
+            })
+            ->join('currencies', 'prices.currency_id', '=', 'currencies.id')
+            ->select(
+                'products.*',
+                DB::raw(
+                    'TRUNC(
+                        (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
+                    ), 2) as price'
+                )
+            )
+            ->whereType('physical')
+            ->groupBy('products.id')
+            ->orderByRaw('COUNT(order_lines.id) DESC')
+            ->take(10)
+            ->get();
 
         return inertia('home', [
             'banners' => $banners,
             'newArrivals' => $newArrivals,
             'collections' => $collections,
+            'bestSellers' => $bestSellers,
         ]);
     }
 }

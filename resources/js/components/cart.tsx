@@ -5,6 +5,7 @@ import { Minus, Plus, ShoppingCartIcon, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { NotificationBadge } from './ui/notification-badge';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 function Cart() {
@@ -55,11 +56,13 @@ function Cart() {
 
     return (
         <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
-                    <ShoppingCartIcon className="!size-5 opacity-80 group-hover:opacity-100" />
-                </Button>
-            </SheetTrigger>
+            <NotificationBadge label={auth.cart?.lines?.reduce((p, c) => p + c.quantity, 0)} show={(auth.cart?.lines?.length ?? 0) > 0}>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
+                        <ShoppingCartIcon className="!size-5 opacity-80 group-hover:opacity-100" />
+                    </Button>
+                </SheetTrigger>
+            </NotificationBadge>
             <SheetContent>
                 <SheetHeader className="border-b border-neutral-200">
                     <SheetTitle>Cart</SheetTitle>

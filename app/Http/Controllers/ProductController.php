@@ -39,7 +39,10 @@ class ProductController extends Controller
         }
 
         $product = $url->element;
-        $product->price = $product->prices->first()->price->formatted() ?? null;
+        $productVariant = $product->variants->first();
+        $price = $productVariant->prices->first();
+        $currency = $price->currency;
+        $product->price = round($price->price->value / pow(10, $currency->decimal_places), 2);
 
         return inertia('product', [
             'product' => $product,

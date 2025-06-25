@@ -122,7 +122,7 @@ function ProductPage({ product }: ProductPageProps) {
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold">{product.attribute_data?.name.en}</h1>
-                    <p className="text-lg font-semibold">{product.price}</p>
+                    <p className="text-lg font-semibold">${product.price}</p>
                     {productOptions.map((option) => (
                         <div key={option.id} className="mt-4">
                             <h2 className="text-lg font-semibold">{option.name.en}</h2>
