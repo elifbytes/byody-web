@@ -13,7 +13,7 @@ function AppFooter() {
                 <div>CONTACTS</div>
             </div>
             <div>
-                <div className="mt-4 text-center text-sm text-gray-500">&copy; {new Date().getFullYear()} IDP Hub. All rights reserved.</div>
+                <div className="mt-4 text-center text-sm text-gray-500">&copy; {new Date().getFullYear()} Byody. All rights reserved.</div>
             </div>
         </div>
     );
