@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lunar\Base\LunarUser as LunarUserInterface;
 use Lunar\Base\Traits\LunarUser;
+use Laravel\WorkOS\WorkOS;
+use WorkOS\UserManagement;
 
 class User extends Authenticatable implements LunarUserInterface
 {
@@ -47,5 +49,25 @@ class User extends Authenticatable implements LunarUserInterface
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            WorkOS::configure();
+
+            $userManagement = new UserManagement();
+
+            $workOsUser = $userManagement->getUser(
+                $user->workos_id,
+            );
+
+            $customer = \Lunar\Models\Customer::create([
+                'first_name' => $workOsUser->firstName,
+                'last_name' => $workOsUser->lastName,
+            ]);
+
+            $customer->users()->attach($user);
+        });
     }
 }

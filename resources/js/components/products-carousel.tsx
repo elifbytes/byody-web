@@ -7,6 +7,9 @@ interface ProductsCarouselProps {
 }
 
 function ProductsCarousel({ products }: ProductsCarouselProps) {
+    if (!products || products.length === 0) {
+        return <div className="text-center text-gray-500">No products available</div>;
+    }
     return (
         <Carousel className="mx-auto max-w-screen md:max-w-3xl lg:max-w-4xl xl:max-w-7xl">
             <CarouselContent>

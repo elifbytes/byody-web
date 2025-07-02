@@ -13,7 +13,7 @@ export type Address = {
     line_three?: string;
     city: string;
     state?: string;
-    postcode: string;
+    postcode?: string;
     delivery_instructions?: string;
     contact_email?: string;
     contact_phone?: string;

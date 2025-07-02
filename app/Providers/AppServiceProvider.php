@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
+use App\PaymentTypes\XenditPayment;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
+use Lunar\Facades\Payments;
 use Lunar\Shipping\ShippingPlugin;
 
 class AppServiceProvider extends ServiceProvider

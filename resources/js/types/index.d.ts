@@ -5,7 +5,6 @@ import { Cart } from './cart';
 
 export interface Auth {
     user: User;
-    cart?: Cart;
 }
 
 export interface BreadcrumbItem {
@@ -29,6 +28,7 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    cart?: Cart;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     collections: Collection[];

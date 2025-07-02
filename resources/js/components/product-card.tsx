@@ -19,7 +19,7 @@ function ProductCard({ product }: ProductCardProps) {
                 </AspectRatio>
                 <div className="flex h-20 flex-col justify-between px-2 py-1">
                     <p className="line-clamp-2">{product.attribute_data?.name.en}</p>
-                    <p className="text-sm font-semibold">${product.price}</p>
+                    <p className="text-sm font-medium">${product.decimal_price}</p>
                 </div>
             </div>
         </Link>

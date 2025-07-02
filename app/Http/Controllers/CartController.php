@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Lunar\Facades\CartSession;
+use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\ProductVariant;
 
@@ -36,28 +38,9 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
 
-
         $productVariant = ProductVariant::findOrFail($request->product_variant_id);
-        $prices = $productVariant->prices;
-        $currencyId = $prices->first()->currency_id ?? null;
-        $channels = $productVariant->product->channels;
-        $channelId = $channels->first()->id ?? null;
-
-        $cart = Cart::where('user_id', Auth::id())->first();
-        if (!$cart) {
-            $cart = Cart::create([
-                'currency_id' => $currencyId,
-                'channel_id' => $channelId,
-                'user_id' => Auth::id(),
-            ]);
-        }
-
         $quantity = $request->quantity;
-        $cart->lines()->create([
-            'purchasable_type' => $productVariant->getMorphClass(),
-            'purchasable_id' => $productVariant->id,
-            'quantity' => $quantity,
-        ]);
+        CartSession::manager()->add($productVariant, $quantity);
 
         return redirect()->back()->with('success', 'Product added to cart successfully.');
     }
@@ -105,5 +88,46 @@ class CartController extends Controller
         $cart->remove($request->cart_line_id);
 
         return redirect()->back()->with('success', 'Item removed from cart successfully.');
+    }
+
+    /**
+     * Set the shipping and biling address for the cart.
+     */
+    public function setAddress(string $addressId)
+    {
+        $cart = CartSession::current();
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        $customer = $user->customers()->latest()->first();
+        $address = $customer->addresses()->findOrFail($addressId);
+        if (!$address) {
+            throw new ValidationException('Address not found.');
+        }
+        $address['meta'] = [
+            'address_id' => $address->id,
+        ];
+        $cart->setShippingAddress($address);
+        $cart->setBillingAddress($address);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Set the shipping option for the cart.
+     */
+    public function setShippingOption(string $identifier)
+    {
+        $cart = CartSession::current();
+
+        $shippingOptions = ShippingManifest::getOptions($cart);
+
+        /** @var \Lunar\DataTypes\ShippingOption|null */
+        $shippingOption = collect($shippingOptions)->firstWhere('identifier', $identifier);
+        if (!$shippingOption) {
+            throw new ValidationException('Shipping option not found.');
+        }
+        $cart->setShippingOption($shippingOption);
+
+        return redirect()->back()->with('success', 'Shipping option set successfully.');
     }
 }

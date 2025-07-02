@@ -8,13 +8,13 @@ import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Account',
+        title: 'Profile',
         href: '/settings/profile',
         icon: null,
     },
     {
-        title: 'Profile',
-        href: '/settings/customer-profile',
+        title: 'Addresses',
+        href: '/settings/address',
         icon: null,
     },
     {

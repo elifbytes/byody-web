@@ -1,11 +1,12 @@
 import InputError from '@/components/input-error';
-import { Button, buttonVariants } from '@/components/ui/button';
+import LoadingButton from '@/components/loading-button';
+import { Button } from '@/components/ui/button';
 import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
-import { SharedData } from '@/types';
+import { getProductVariantPrice } from '@/lib/price';
 import { Media } from '@/types/media';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Minus, Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -14,8 +15,6 @@ interface ProductPageProps {
     product: Product;
 }
 function ProductPage({ product }: ProductPageProps) {
-    const { auth } = usePage<SharedData>().props;
-    
     const [selectedMedia, setSelectedMedia] = useState<Media | undefined>(product.media?.[0]);
     const [selectedValues, setSelectedValues] = useState<ProductOptionValue[]>();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
@@ -122,7 +121,7 @@ function ProductPage({ product }: ProductPageProps) {
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold">{product.attribute_data?.name.en}</h1>
-                    <p className="text-lg font-semibold">${product.price}</p>
+                    <p className="text-lg font-semibold">{getProductVariantPrice(product.variants?.[0])}</p>
                     {productOptions.map((option) => (
                         <div key={option.id} className="mt-4">
                             <h2 className="text-lg font-semibold">{option.name.en}</h2>
@@ -147,31 +146,20 @@ function ProductPage({ product }: ProductPageProps) {
                             <p className="text-sm text-muted-foreground">Stock: {selectedVariant.stock}</p>
                         </div>
                     )}
-                    {auth.user ? (
-                        <>
-                            <div className="mt-4 flex items-center justify-center">
-                                <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}>
-                                    <Minus className="h-4 w-4" />
-                                </Button>
-                                <div className="mx-10">{quantity}</div>
-                                <Button
-                                    disabled={!selectedVariant}
-                                    onClick={() => setQuantity((prev) => Math.min(prev + 1, selectedVariant?.stock || 1))}
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <Button className="mt-4 w-full rounded" disabled={!selectedVariant || processing} onClick={handleAddToCart}>
-                                {processing ? 'Adding to cart...' : 'Add to Cart'}
-                            </Button>
-                            <InputError>{errors.product_variant_id}</InputError>
-                            <InputError>{errors.quantity}</InputError>
-                        </>
-                    ) : (
-                        <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('login')}>
-                            Please log in to add to cart
-                        </Link>
-                    )}
+                    <div className="mt-4 flex items-center justify-center">
+                        <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}>
+                            <Minus className="h-4 w-4" />
+                        </Button>
+                        <div className="mx-10">{quantity}</div>
+                        <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.min(prev + 1, selectedVariant?.stock || 1))}>
+                            <Plus className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <LoadingButton className="mt-4 w-full rounded" loading={processing} onClick={handleAddToCart}>
+                        Add to Cart
+                    </LoadingButton>
+                    <InputError message={errors.product_variant_id} />
+                    <InputError message={errors.quantity} />
                 </div>
             </div>
         </AppLayout>

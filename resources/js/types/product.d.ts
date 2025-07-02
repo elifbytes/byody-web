@@ -19,7 +19,7 @@ export type Product = {
     product_options?: ProductOption[];
     thumbnail?: Media;
     prices?: Price[];
-    price?: string;
+    decimal_price?: number;
     default_url?: Url;
 };
 

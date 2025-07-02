@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Lunar\Facades\CartSession;
 use Lunar\Models\Collection;
 use Lunar\Models\CollectionGroup;
 use Tighten\Ziggy\Ziggy;
@@ -39,36 +40,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $request->user();
-        if ($user) {
-            $cart = $user->carts()->first();
-            if ($cart) {
-                $cart->load(['lines.purchasable.product.thumbnail', 'lines.purchasable.values', 'lines.purchasable.prices']);
-                // $cart->calculate();
-                // $cart->calculation = [
-                //     'total' => $cart->total->formatted(),
-                //     'subTotal' => $cart->subTotal->formatted(),
-                //     'subTotalDiscounted' => $cart->subTotalDiscounted->formatted(),
-                //     'taxTotal' => $cart->taxTotal->formatted(),
-                //     'discountTotal' => $cart->discountTotal->formatted(),
-                // ];
-
-                // foreach ($cart->lines as $cartLine) {
-                //     $cartLine->calculation = [
-                //         'total' => $cartLine->total->formatted(),
-                //         'subTotal' => $cartLine->subTotal->formatted(),
-                //         'subTotalDiscounted' => $cartLine->subTotalDiscounted->formatted(),
-                //         'taxTotal' => $cartLine->taxAmount->formatted(),
-                //         'discountTotal' => $cartLine->discountTotal->formatted(),
-                //         'unitPrice' => $cartLine->unitPrice->formatted(),
-                //         'unitPriceInclTax' => $cartLine->unitPriceInclTax->formatted(),
-                //     ];
-                // }
-            }
-        }
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $collectionGroups = CollectionGroup::with('collections.defaultUrl')->where('handle', '=', 'main')->first();
+
+        $cart = CartSession::current(calculate: false);
 
         return [
             ...parent::share($request),
@@ -76,7 +52,6 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
-                'cart' => $cart ?? null,
             ],
             'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
@@ -84,6 +59,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'collections' => $collectionGroups->collections,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'false',
+            'cart' => $cart,
         ];
     }
 }

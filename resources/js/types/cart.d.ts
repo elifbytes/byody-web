@@ -3,7 +3,9 @@ import { Country } from './country';
 import { Currency } from './currency';
 import { Customer } from './customer';
 import { Discount } from './discount';
+import { CastedPrice } from './price';
 import { ProductVariant } from './product';
+import { ShippingOption } from './shipping';
 
 export type Cart = {
     id: number;
@@ -24,6 +26,7 @@ export type Cart = {
     shipping_address?: CartAddress;
     billing_address?: CartAddress;
     calculation?: CartCalculation;
+    shipping_option?: ShippingOption;
 };
 
 export type CartLine = {
@@ -57,16 +60,19 @@ export type CartAddress = {
     contact_phone?: string;
     type: string;
     shipping_option?: string;
-    meta?: string;
+    meta?: {
+        [key: string]: string | number; // Allow additional properties
+    };
     country?: Country;
 };
 
 export type CartCalculation = {
-    total: string;
-    subTotal: string;
-    subTotalDiscounted: string;
-    taxTotal: string;
-    discountTotal: string;
-    unitPrice?: string;
-    unitPriceInclTax?: string;
-}
+    total: CastedPrice;
+    subTotal: CastedPrice;
+    subTotalDiscounted: CastedPrice;
+    taxTotal: CastedPrice;
+    discountTotal: CastedPrice;
+    unitPrice?: CastedPrice;
+    unitPriceInclTax?: CastedPrice;
+    shippingTotal?: CastedPrice;
+};

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Banner;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
-use Lunar\Facades\Pricing;
 use Lunar\Models\Collection;
 use Lunar\Models\Product;
 use Lunar\Models\ProductVariant;
@@ -33,17 +32,13 @@ class HomeController extends Controller
                 DB::raw(
                     'TRUNC(
                         (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
-                    ), 2) as price'
+                    ), 2) as decimal_price'
                 )
             )
             ->groupBy('products.id')
             ->orderBy('products.created_at', 'desc')
             ->take(10)
             ->get();
-
-        // foreach ($newArrivals as $product) {
-        //     $product->price = Pricing::for($product->variants->first())->get()->base->price->formatted();
-        // }
 
         $collections = Collection::query()
             ->with(['products', 'thumbnail'])
@@ -64,7 +59,7 @@ class HomeController extends Controller
                 DB::raw(
                     'TRUNC(
                         (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
-                    ), 2) as price'
+                    ), 2) as decimal_price'
                 )
             )
             ->whereType('physical')
