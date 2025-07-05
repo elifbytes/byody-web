@@ -1,21 +1,27 @@
 import InputError from '@/components/input-error';
 import LoadingButton from '@/components/loading-button';
 import { Button } from '@/components/ui/button';
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
-import { getProductVariantPrice } from '@/lib/price';
-import { Media } from '@/types/media';
+import { formatPrice } from '@/lib/price';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
 import { useForm } from '@inertiajs/react';
-import { Minus, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import parse from 'html-react-parser';
+import { CheckCircle2, Minus, Plus } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 interface ProductPageProps {
     product: Product;
 }
 function ProductPage({ product }: ProductPageProps) {
-    const [selectedMedia, setSelectedMedia] = useState<Media | undefined>(product.media?.[0]);
+    const prices = product.variants?.[0]?.prices;
+    const price = prices?.[0]?.price;
+    const comparePrice = prices?.[0]?.compare_price;
+
+    const [carousel, setCarousel] = useState<CarouselApi>();
+    const [carouselIndex, setCarouselIndex] = useState<number>(0);
     const [selectedValues, setSelectedValues] = useState<ProductOptionValue[]>();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
     const [quantity, setQuantity] = useState<number>(1);
@@ -24,6 +30,11 @@ function ProductPage({ product }: ProductPageProps) {
         product_variant_id: selectedVariant?.id,
         quantity: quantity,
     });
+
+    const onThumbClick = (index: number) => {
+        if (!carousel) return;
+        carousel.scrollTo(index);
+    };
 
     const handleAddToCart = () => {
         if (!selectedVariant) return;
@@ -88,6 +99,14 @@ function ProductPage({ product }: ProductPageProps) {
         }
     };
 
+    const handleSlideChange = useCallback((carousel: CarouselApi) => {
+        setCarouselIndex(carousel?.selectedScrollSnap() || 0);
+    }, []);
+
+    useEffect(() => {
+        if (carousel) carousel.on('select', handleSlideChange);
+    }, [carousel, handleSlideChange]);
+
     useEffect(() => {
         // Find the selected variant based on the selected values
         const matchingVariant = product.variants?.find((variant) => {
@@ -96,32 +115,54 @@ function ProductPage({ product }: ProductPageProps) {
         setSelectedVariant(matchingVariant);
 
         // find the media that matches the selected variant
-        const matchingMedia = matchingVariant?.images?.[0];
-        if (matchingMedia) setSelectedMedia(matchingMedia);
+        const matchingMediaIndex = product.media?.findIndex((media) => {
+            return media.id === matchingVariant?.id;
+        });
+
+        if (matchingMediaIndex !== undefined && matchingMediaIndex >= 0 && carousel) {
+            carousel.scrollTo(matchingMediaIndex);
+            setCarouselIndex(matchingMediaIndex);
+        }
 
         return () => {};
-    }, [selectedValues, product.variants, product.media]);
+    }, [selectedValues, product.variants, product.media, carousel]);
 
     return (
         <AppLayout>
             <div className="container mx-auto grid gap-8 p-4 md:grid-cols-2">
                 <div className="grid gap-3">
-                    {selectedMedia && <img src={selectedMedia.original_url} alt={product.attribute_data?.name.en} className="h-auto w-full" />}
+                    <Carousel setApi={setCarousel} opts={{ loop: true }}>
+                        <CarouselContent>
+                            {product.media?.map((media) => (
+                                <CarouselItem key={media.id}>
+                                    <img src={media.original_url} alt={media.file_name} className="h-full w-full object-cover" />
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                    </Carousel>
                     <div className="grid grid-cols-6 gap-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                        {product.media?.map((media) => (
-                            <img
-                                key={media.id}
-                                src={media.original_url}
-                                alt={media.file_name}
-                                className="h-auto w-full hover:cursor-pointer"
-                                onClick={() => setSelectedMedia(media)}
-                            />
+                        {product.media?.map((media, index) => (
+                            <div className="relative h-20 w-full" key={media.id}>
+                                <img
+                                    src={media.original_url}
+                                    alt={media.file_name}
+                                    className="h-auto w-full hover:cursor-pointer"
+                                    onClick={() => onThumbClick(index)}
+                                />
+                                {carouselIndex === index && (
+                                    // add a check icon to indicate the selected thumbnail to the center of the thumbnail
+                                    <CheckCircle2 className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-background/50" />
+                                )}
+                            </div>
                         ))}
                     </div>
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold">{product.attribute_data?.name.en}</h1>
-                    <p className="text-lg font-semibold">{getProductVariantPrice(product.variants?.[0])}</p>
+                    <div className="flex items-center space-x-2">
+                        {comparePrice && comparePrice.value > 0 && <p className="text-sm text-gray-500 line-through">{formatPrice(comparePrice)}</p>}
+                        <p className="text-lg font-semibold">{formatPrice(price)}</p>
+                    </div>
                     {productOptions.map((option) => (
                         <div key={option.id} className="mt-4">
                             <h2 className="text-lg font-semibold">{option.name.en}</h2>
@@ -160,6 +201,9 @@ function ProductPage({ product }: ProductPageProps) {
                     </LoadingButton>
                     <InputError message={errors.product_variant_id} />
                     <InputError message={errors.quantity} />
+                    <div className="mt-10">
+                        <div className="prose">{product.attribute_data?.description && parse(product.attribute_data.description.en)}</div>
+                    </div>
                 </div>
             </div>
         </AppLayout>

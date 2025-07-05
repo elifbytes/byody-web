@@ -4,10 +4,12 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 use Lunar\Facades\CartSession;
 use Lunar\Models\Collection;
 use Lunar\Models\CollectionGroup;
+use Lunar\Models\Contracts\Cart;
 use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
@@ -42,7 +44,9 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $collectionGroups = CollectionGroup::with('collections.defaultUrl')->where('handle', '=', 'main')->first();
+        $mainCollections = Cache::remember('main_collections', 60 * 60, function () {
+            return CollectionGroup::with(['collections.defaultUrl', 'collections.thumbnail'])->where('handle', '=', 'main')->first();
+        });
 
         $cart = CartSession::current(calculate: false);
 
@@ -57,7 +61,7 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'collections' => $collectionGroups->collections,
+            'collections' => $mainCollections->collections,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'false',
             'cart' => $cart,
         ];

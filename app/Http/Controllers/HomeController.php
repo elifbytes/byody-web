@@ -20,48 +20,18 @@ class HomeController extends Controller
             ->orderBy('order_column')
             ->get();
 
-        $newArrivals = Product::with(['thumbnail', 'defaultUrl'])
-            ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
-            ->join('prices', function (JoinClause $join) {
-                $join->on('product_variants.id', '=', 'prices.priceable_id')
-                    ->where('prices.priceable_type', (new ProductVariant)->getMorphClass());
-            })
-            ->join('currencies', 'prices.currency_id', '=', 'currencies.id')
-            ->select(
-                'products.*',
-                DB::raw(
-                    'TRUNC(
-                        (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
-                    ), 2) as decimal_price'
-                )
-            )
-            ->groupBy('products.id')
+        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices'])
+            ->where('status', 'published')
             ->orderBy('products.created_at', 'desc')
             ->take(10)
             ->get();
 
-        $collections = Collection::query()
-            ->with(['products', 'thumbnail'])
-            ->orderBy('_lft')
-            ->get();
-
         $bestSellers = Product::query()
-            ->with(['thumbnail', 'defaultUrl', 'variants'])
+            ->with(['thumbnail', 'defaultUrl', 'variants.prices'])
             ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
-            ->join('prices', function (JoinClause $join) {
-                $join->on('product_variants.id', '=', 'prices.priceable_id')
-                    ->where('prices.priceable_type', (new ProductVariant)->getMorphClass());
-            })
-            ->join('currencies', 'prices.currency_id', '=', 'currencies.id')
-            ->select(
-                'products.*',
-                DB::raw(
-                    'TRUNC(
-                        (MIN(prices.price) / POWER(10, MIN(currencies.decimal_places))::NUMERIC
-                    ), 2) as decimal_price'
-                )
-            )
+            ->select('products.*')
+            ->where('products.status', 'published')
             ->whereType('physical')
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
@@ -71,7 +41,6 @@ class HomeController extends Controller
         return inertia('home', [
             'banners' => $banners,
             'newArrivals' => $newArrivals,
-            'collections' => $collections,
             'bestSellers' => $bestSellers,
         ]);
     }

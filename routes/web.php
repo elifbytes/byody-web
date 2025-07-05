@@ -10,6 +10,7 @@ use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('product/{slug}', [ProductController::class, 'show'])->name('product.show');
+Route::get('products', [ProductController::class, 'index'])->name('product.index');
 Route::resource('cart', CartController::class);
 
 Route::middleware([

@@ -35,7 +35,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Sale',
-        href: '/collections/sale',
+        href: '/products',
     },
     {
         title: 'About',

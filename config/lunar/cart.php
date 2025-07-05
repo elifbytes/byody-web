@@ -120,14 +120,9 @@ return [
     |
     */
     'eager_load' => [
-        'currency',
-        'lines.purchasable.taxClass',
         'lines.purchasable.values',
         'lines.purchasable.product.thumbnail',
-        'lines.purchasable.prices.currency',
-        'lines.purchasable.prices.priceable',
-        'lines.purchasable.product',
-        'lines.cart.currency',
+        'lines.purchasable.prices',
     ],
 
     /*
