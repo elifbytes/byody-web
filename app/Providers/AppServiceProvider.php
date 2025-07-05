@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
+use App\Observers\CollectionObserver;
 use App\PaymentTypes\XenditPayment;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Facades\Payments;
+use Lunar\Models\Collection;
 use Lunar\Shipping\ShippingPlugin;
 
 class AppServiceProvider extends ServiceProvider
@@ -48,6 +50,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Collection::observe(CollectionObserver::class);
     }
 }

@@ -16,7 +16,11 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        
+        $products = QueryBuilder::for(Product::class)
+            ->with([
+                'collections',
+            ])
+            ->paginate(12);
     }
 
     /**
@@ -31,6 +35,7 @@ class ProductController extends Controller
                 'element.media',
                 'element.variants.values.option',
                 'element.variants.images',
+                'element.variants.prices',
             ]
         );
 
@@ -39,10 +44,6 @@ class ProductController extends Controller
         }
 
         $product = $url->element;
-        $productVariant = $product->variants->first();
-        $price = $productVariant->prices->first();
-        $currency = $price->currency;
-        $product->price = round($price->price->value / pow(10, $currency->decimal_places), 2);
 
         return inertia('product', [
             'product' => $product,
