@@ -1,4 +1,4 @@
-import { Name } from '.';
+import { Language } from '.';
 import { AttributeData } from './attribute';
 import { Media } from './media';
 import { Price } from './price';
@@ -63,9 +63,9 @@ export type ProductVariant = {
 
 export type ProductOption = {
     id: number;
-    name: Name;
+    name: Language;
     handle: string;
-    label: Name;
+    label: Language;
     shared: boolean;
     values?: ProductOptionValue[];
 };
@@ -73,7 +73,7 @@ export type ProductOption = {
 export type ProductOptionValue = {
     id: number;
     product_option_id: number;
-    name: Name;
+    name: Language;
     position: number;
     option?: ProductOption;
 }

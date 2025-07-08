@@ -2,7 +2,6 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
@@ -15,27 +14,21 @@ import {
 } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
-import { useDebounce } from '@/hooks/use-debounce';
 import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
-import searchService from '@/services/search-service';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { Product } from '@/types/product';
 import { Link, usePage } from '@inertiajs/react';
 import { Menu, Search } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import Cart from './cart';
+import SearchDialog from './search-dialog';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Home',
         href: '/',
-    },
-    {
-        title: 'Sale',
-        href: '/products',
     },
     {
         title: 'About',
@@ -54,25 +47,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const { auth, collections } = page.props;
 
     const [openSearch, setOpenSearch] = useState<boolean>(false);
-    const [searchProducts, setSearchProducts] = useState<Product[]>([]);
-
-    const [search, setSearch] = useState<string>('');
-    const debouncedsearch = useDebounce<string>(search, 500);
 
     const getInitials = useInitials();
-
-    const getSearchProducts = useCallback(async () => {
-        const searchResult = await searchService.getProducts(debouncedsearch);
-        setSearchProducts(searchResult);
-    }, [debouncedsearch]);
-
-    useEffect(() => {
-        if (debouncedsearch.trim() === '') {
-            setSearchProducts([]);
-            return;
-        }
-        getSearchProducts();
-    }, [debouncedsearch, getSearchProducts]);
 
     return (
         <>
@@ -116,7 +92,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
                     {/* Desktop Navigation */}
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
-                        <NavigationMenu className="flex h-full items-stretch">
+                        <NavigationMenu className="flex h-full items-stretch" viewport={false}>
                             <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                 {mainNavItems.map((item, index) => (
                                     <NavigationMenuItem key={index} className="relative flex h-full items-center">
@@ -133,22 +109,42 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         </Link>
                                     </NavigationMenuItem>
                                 ))}
-                                <NavigationMenuItem className="relative flex h-full items-center">
-                                    <NavigationMenuTrigger>Shop</NavigationMenuTrigger>
-                                    <NavigationMenuContent>
-                                        <ul className="grid w-[300px] gap-4">
-                                            <li>
-                                                {collections.map((collection) => (
-                                                    <NavigationMenuLink key={collection.id} asChild>
-                                                        <Link href={`/collections/${collection.default_url?.slug}`}>
-                                                            <div className="font-medium">{collection.attribute_data?.name.en}</div>
-                                                        </Link>
-                                                    </NavigationMenuLink>
-                                                ))}
-                                            </li>
-                                        </ul>
-                                    </NavigationMenuContent>
-                                </NavigationMenuItem>
+                                {collections.map((collection) =>
+                                    (collection.children?.length || 0) > 0 ? (
+                                        <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
+                                            <NavigationMenuTrigger>{collection.attribute_data?.name.en}</NavigationMenuTrigger>
+                                            <NavigationMenuContent>
+                                                <ul className="grid w-[300px] gap-4">
+                                                    <li>
+                                                        {collection.children?.map((child) => (
+                                                            <NavigationMenuLink asChild key={child.id}>
+                                                                <Link href={`/products?filter[collections]=${child.default_url?.slug}`}>
+                                                                    <div className="font-medium">{child.attribute_data?.name.en}</div>
+                                                                </Link>
+                                                            </NavigationMenuLink>
+                                                        ))}
+                                                    </li>
+                                                </ul>
+                                            </NavigationMenuContent>
+                                        </NavigationMenuItem>
+                                    ) : (
+                                        <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
+                                            <NavigationMenuLink asChild>
+                                                <Link
+                                                    href={`/products?filter[collections]=${collection.default_url?.slug}`}
+                                                    className={cn(
+                                                        navigationMenuTriggerStyle(),
+                                                        page.url === `/products?filter[collections]=${collection.default_url?.slug}` &&
+                                                            activeItemStyles,
+                                                        'h-9 px-3',
+                                                    )}
+                                                >
+                                                    {collection.attribute_data?.name.en}
+                                                </Link>
+                                            </NavigationMenuLink>
+                                        </NavigationMenuItem>
+                                    ),
+                                )}
                             </NavigationMenuList>
                         </NavigationMenu>
                     </div>
@@ -157,37 +153,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer" onClick={() => setOpenSearch(true)}>
                             <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
-                        <CommandDialog open={openSearch} onOpenChange={setOpenSearch} shouldFilter={false}>
-                            <CommandInput placeholder="Search our products..." value={search} onValueChange={setSearch} />
-                            <CommandList>
-                                {searchProducts.length <= 0 ? (
-                                    <CommandEmpty>No products found.</CommandEmpty>
-                                ) : (
-                                    <CommandGroup heading="Results">
-                                        {searchProducts.map((product) => (
-                                            <Link key={product.id} href={route('product.show', product.default_url?.slug)}>
-                                                <CommandItem
-                                                    onSelect={() => {
-                                                        setOpenSearch(false);
-                                                    }}
-                                                >
-                                                    <div className="flex items-center space-x-2">
-                                                        {product.thumbnail && (
-                                                            <img
-                                                                src={product.thumbnail.original_url}
-                                                                alt={product.attribute_data?.name.en}
-                                                                className="h-6 w-6 rounded"
-                                                            />
-                                                        )}
-                                                        <span>{product.attribute_data?.name.en}</span>
-                                                    </div>
-                                                </CommandItem>
-                                            </Link>
-                                        ))}
-                                    </CommandGroup>
-                                )}
-                            </CommandList>
-                        </CommandDialog>
+                        <SearchDialog open={openSearch} onOpenChange={setOpenSearch} />
                         <Cart />
                         {auth.user ? (
                             <DropdownMenu>

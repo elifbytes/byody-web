@@ -1,4 +1,4 @@
-import { Name } from '.';
+import { Language } from ".";
 
 export type Attributable = {
     id: number;
@@ -11,7 +11,7 @@ export type Attribute = {
     attribute_type: string;
     attribute_group_id: number;
     position: number;
-    name: Name;
+    name: Language;
     handle: string;
     section?: string;
     type: string;
@@ -22,20 +22,17 @@ export type Attribute = {
     searchable: boolean;
     filterable: boolean;
     validation_rules?: string;
-    description?: Name;
+    description?: Language;
     attributable?: Attributable;
 };
 
 export type AttributeGroup = {
     id: number;
     attributable_type: string;
-    name: Name;
+    name: Language;
     handle: string;
     position: number;
     attributes: Attribute[];
 };
 
-export type AttributeData = {
-    name: Name;
-    description?: Name;
-};
+export type AttributeData = Record<string, Language>;

@@ -9,20 +9,20 @@ use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 
 Route::get('/', HomeController::class)->name('home');
-Route::get('product/{slug}', [ProductController::class, 'show'])->name('product.show');
-Route::get('products', [ProductController::class, 'index'])->name('product.index');
-Route::resource('cart', CartController::class);
+Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('products', [ProductController::class, 'index'])->name('products.index');
+Route::resource('carts', CartController::class);
 
 Route::middleware([
     'auth',
     ValidateSessionWithWorkOS::class,
 ])->group(function () {
-    Route::resource('order', OrderController::class);
+    Route::resource('orders', OrderController::class);
     
-    Route::put('cart/set-address/{addressId}', [CartController::class, 'setAddress'])->name('cart.set-address');
-    Route::put('cart/set-shipping-option/{identifier}', [CartController::class, 'setShippingOption'])->name('cart.set-shipping-option');
+    Route::put('carts/set-address/{addressId}', [CartController::class, 'setAddress'])->name('carts.set-address');
+    Route::put('carts/set-shipping-option/{identifier}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
 
-    Route::post('customer/update', [ProfileController::class, 'updateCustomer'])->name('customer.profile.update');
+    Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
 
 });
 

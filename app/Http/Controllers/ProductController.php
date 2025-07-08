@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Traits\FetchesUrls;
 use Illuminate\Http\Request;
+use Lunar\Models\Collection;
 use Lunar\Models\Product;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class ProductController extends Controller
@@ -16,11 +18,35 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        $search = $request->input('search');
+        $searchIds = blank($search) ? [] : Product::search($search)->keys();
+
+        $collections = Collection::with(['defaultUrl'])->get()->toTree();
         $products = QueryBuilder::for(Product::class)
-            ->with([
-                'collections',
+            ->with(['thumbnail'])
+            ->allowedFilters([
+                AllowedFilter::callback('collections', function ($query, $value) {
+                    $query->whereHas('collections', function ($q) use ($value) {
+                        $url = $this->fetchUrl(
+                            $value,
+                            (new Collection())->getMorphClass()
+                        );
+                        if (! $url) {
+                            return;
+                        }
+                        $q->where('collections.id', $url->id);
+                    });
+                }),
             ])
+            ->tap(function ($query) use ($searchIds) {
+                return empty($searchIds) ? $query : $query->whereIn('id', $searchIds);
+            })
             ->paginate(12);
+
+        return inertia('products/index', [
+            'products' => $products,
+            'collections' => $collections,
+        ]);
     }
 
     /**
@@ -45,7 +71,7 @@ class ProductController extends Controller
 
         $product = $url->element;
 
-        return inertia('product', [
+        return inertia('products/show', [
             'product' => $product,
         ]);
     }

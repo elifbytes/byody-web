@@ -62,7 +62,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     const handleSetAddress = (addressId: number) => {
         const selectedAddress = addresses.find((a) => a.id === addressId);
         if (selectedAddress) {
-            put(route('cart.set-address', selectedAddress.id), {
+            put(route('carts.set-address', selectedAddress.id), {
                 onSuccess: () => {
                     toast.success('Address selected successfully');
                 },
@@ -75,7 +75,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     };
 
     const handleSetShippingOption = (identifier: string) => {
-        put(route('cart.set-shipping-option', identifier), {
+        put(route('carts.set-shipping-option', identifier), {
             onSuccess: () => {
                 toast.success('Shipping option selected successfully');
             },

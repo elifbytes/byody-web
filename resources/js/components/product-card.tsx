@@ -13,7 +13,7 @@ function ProductCard({ product }: ProductCardProps) {
         product.variants?.[0].prices?.[0].compare_price?.value !== 0 ? formatPrice(product.variants?.[0].prices?.[0].compare_price) : null;
 
     return (
-        <Link href={product.default_url ? route('product.show', product.default_url.slug) : '#'}>
+        <Link href={product.default_url ? route('products.show', product.default_url.slug) : '#'}>
             <div className="hover:bg-gray-100">
                 <AspectRatio ratio={1 / 1}>
                     <img

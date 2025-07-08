@@ -69,7 +69,7 @@ class OrderController extends Controller
             return redirect()->back()->withErrors(['cart' => $ce->getMessage()]);
         }
 
-        return redirect()->route('order.index');
+        return redirect()->route('orders.index');
     }
 
     /**

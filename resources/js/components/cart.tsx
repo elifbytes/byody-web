@@ -30,7 +30,7 @@ function Cart() {
             quantity: quantity,
         }));
 
-        put(route('cart.update', cart?.id), {
+        put(route('carts.update', cart?.id), {
             onSuccess: () => {
                 toast.success('Cart updated successfully');
             },

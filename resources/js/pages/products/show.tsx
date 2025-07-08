@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import LoadingButton from '@/components/loading-button';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Toggle } from '@/components/ui/toggle';
@@ -12,10 +13,10 @@ import { CheckCircle2, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-interface ProductPageProps {
+interface ShowProductPageProps {
     product: Product;
 }
-function ProductPage({ product }: ProductPageProps) {
+function ShowProductPage({ product }: ShowProductPageProps) {
     const prices = product.variants?.[0]?.prices;
     const price = prices?.[0]?.price;
     const comparePrice = prices?.[0]?.compare_price;
@@ -44,7 +45,7 @@ function ProductPage({ product }: ProductPageProps) {
             product_variant_id: selectedVariant.id,
             quantity: quantity,
         }));
-        post(route('cart.store'), {
+        post(route('carts.store'), {
             preserveScroll: true,
             onSuccess: () => {
                 setQuantity(1); // Reset quantity after adding to cart
@@ -143,15 +144,17 @@ function ProductPage({ product }: ProductPageProps) {
                     <div className="grid grid-cols-6 gap-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                         {product.media?.map((media, index) => (
                             <div className="relative h-20 w-full" key={media.id}>
-                                <img
-                                    src={media.original_url}
-                                    alt={media.file_name}
-                                    className="h-auto w-full hover:cursor-pointer"
-                                    onClick={() => onThumbClick(index)}
-                                />
+                                <AspectRatio ratio={1 / 1}>
+                                    <img
+                                        src={media.original_url}
+                                        alt={media.file_name}
+                                        className="h-auto w-full hover:cursor-pointer"
+                                        onClick={() => onThumbClick(index)}
+                                    />
+                                </AspectRatio>
                                 {carouselIndex === index && (
                                     // add a check icon to indicate the selected thumbnail to the center of the thumbnail
-                                    <CheckCircle2 className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-background/50" />
+                                    <CheckCircle2 className="absolute top-1/2 left-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 text-background/50" />
                                 )}
                             </div>
                         ))}
@@ -210,4 +213,4 @@ function ProductPage({ product }: ProductPageProps) {
     );
 }
 
-export default ProductPage;
+export default ShowProductPage;

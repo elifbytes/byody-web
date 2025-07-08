@@ -44,10 +44,7 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $mainCollections = Cache::remember('main_collections', 60 * 60, function () {
-            return CollectionGroup::with(['collections.defaultUrl', 'collections.thumbnail'])->where('handle', '=', 'main')->first();
-        });
-
+        $collections = Collection::with(['thumbnail', 'defaultUrl'])->get()->toTree();
         $cart = CartSession::current(calculate: false);
 
         return [
@@ -61,7 +58,7 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'collections' => $mainCollections->collections,
+            'collections' => $collections,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'false',
             'cart' => $cart,
         ];
