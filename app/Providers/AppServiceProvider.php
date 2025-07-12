@@ -3,12 +3,10 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
-use App\Observers\CollectionObserver;
-use App\PaymentTypes\XenditPayment;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
-use Lunar\Facades\Payments;
-use Lunar\Models\Collection;
+use Lunar\Models\Price;
+use Lunar\Models\Product;
 use Lunar\Shipping\ShippingPlugin;
 
 class AppServiceProvider extends ServiceProvider
@@ -50,6 +48,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Collection::observe(CollectionObserver::class);
+        // Product::resolveRelationUsing(
+        //     'price',
+        //     function (Product $product) {
+        //         return Price::query()
+        //             ->join('product_variants', 'product_variants.id', '=', 'prices.priceable_id')
+        //             ->wherePriceableType('product_variant')
+        //             ->where('product_variants.product_id', $product->id)
+        //             ->select('prices.*')
+        //             ->limit(1);
+        //     }
+        // );
     }
 }

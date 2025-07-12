@@ -17,7 +17,7 @@ class OrderController extends Controller
     {
         $orders = request()->user()->orders()->with(['addresses', 'items'])->latest()->get();
 
-        return inertia('order/index', [
+        return inertia('orders/index', [
             'orders' => $orders
         ]);
     }
@@ -47,7 +47,7 @@ class OrderController extends Controller
         $shippingOptions = ShippingManifest::getOptions($cart);
         $cart->load('lines.purchasable.product.thumbnail', 'lines.purchasable.prices', 'lines.purchasable.values');
 
-        return inertia('order/create', [
+        return inertia('orders/create', [
             'cart' => $cart,
             'countries' => $countries,
             'addresses' => $customer ? $customer->addresses : [],

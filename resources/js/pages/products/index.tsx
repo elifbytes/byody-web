@@ -20,9 +20,9 @@ import { getPaginationItems } from '@/lib/utils';
 import { Paginated, UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
 import { Product } from '@/types/product';
-import { router, useForm } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { SearchIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 interface ProductPageProps {
     products: Paginated<Product>;
@@ -32,6 +32,10 @@ interface ProductPageProps {
     sort?: string;
 }
 export default function ProductPage({ products, collections, filters, sort }: ProductPageProps) {
+    const urlParams: UrlParams = {
+        filter: filters || {},
+        sort: sort || '',
+    };
     const flatCollections = flattenCollections(collections);
     // filters comma separated values to array
     let filteredCollections: string[] = [];
@@ -39,10 +43,6 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
         filteredCollections = filters.collections.split(',');
     }
     const [openSearch, setOpenSearch] = useState<boolean>(false);
-    const { data, setData, isDirty } = useForm<UrlParams>({
-        filter: filters || {},
-        sort: sort || '',
-    });
 
     const currentPage = products.current_page;
     const lastPage = products.last_page;
@@ -54,19 +54,20 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
     // };
 
     const handleFilterChange = (key: string, value: string) => {
-        const newFilters = { ...data.filter, [key]: value };
-        setData('filter', newFilters);
-    };
-
-    useEffect(() => {
-        if (isDirty) {
-            router.get('/products', data, {
+        const newFilters = { ...urlParams.filter, [key]: value };
+        if (value === '') {
+            delete newFilters[key];
+        }
+        router.get(
+            '/products',
+            { ...urlParams, filter: newFilters },
+            {
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
-            });
-        }
-    }, [data, isDirty]);
+            },
+        );
+    };
 
     return (
         <AppLayout>
@@ -78,7 +79,7 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                                 <SearchIcon className="h-4 w-4" />
                                 Search
                             </Button>
-                            <SearchDialog open={openSearch} onOpenChange={setOpenSearch} urlParams={data} />
+                            <SearchDialog open={openSearch} onOpenChange={setOpenSearch} urlParams={urlParams} />
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
