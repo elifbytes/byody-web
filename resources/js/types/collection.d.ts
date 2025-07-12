@@ -22,6 +22,7 @@ export type Collection = {
     products?: Product[];
     default_url?: Url;
     thumbnail?: Media;
+    children?: Collection[];
 }
 
 export type CollectionGroup = {
