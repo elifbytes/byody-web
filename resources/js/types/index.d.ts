@@ -1,7 +1,7 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
-import { Collection } from './collection';
 import { Cart } from './cart';
+import { Collection } from './collection';
 
 export interface Auth {
     user: User;
@@ -49,21 +49,26 @@ export interface User {
 export type Language = Record<string, string>;
 
 export type Paginated<T> = {
-	data: T[];
-	current_page: number;
-	last_page: number;
-	per_page: number;
-	from: number;
-	to: number;
-	total: number;
-	prev_page_url: string | null;
-	next_page_url: string | null;
-	links: {
-		url: string | null;
-		label: string;
-		active: boolean;
-	}[];
-	path: string;
-	first_page_url: string;
-	last_page_url: string;
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    from: number;
+    to: number;
+    total: number;
+    prev_page_url: string | null;
+    next_page_url: string | null;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+    path: string;
+    first_page_url: string;
+    last_page_url: string;
+};
+
+export type UrlParams = {
+    filter?: Record<string, string>;
+    sort?: string;
 };

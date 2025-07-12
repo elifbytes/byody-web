@@ -35,7 +35,7 @@ return [
     |
     */
     'pipelines' => [
-        // App\Pipelines\Pricing\Example::class,
+        App\Pipelines\Pricing\CustomPricingPipeline::class,
     ],
 
 ];

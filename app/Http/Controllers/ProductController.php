@@ -21,12 +21,26 @@ class ProductController extends Controller
         $search = $request->input('search');
         $searchIds = blank($search) ? [] : Product::search($search)->keys();
 
-        $collections = Collection::with(['defaultUrl'])->get()->toTree();
         $products = QueryBuilder::for(Product::class)
-            ->with(['thumbnail'])
+            ->with(['thumbnail', 'variants.prices', 'defaultUrl'])
             ->allowedFilters([
                 AllowedFilter::callback('collections', function ($query, $value) {
                     $query->whereHas('collections', function ($q) use ($value) {
+                        if (is_array($value)) {
+                            $ids = collect($value)->map(function ($v) {
+                                $url = $this->fetchUrl(
+                                    $v,
+                                    (new Collection())->getMorphClass()
+                                );
+                                return $url ? $url->id : null;
+                            })->filter();
+                            if ($ids->isEmpty()) {
+                                return;
+                            }
+                            $q->whereIn('collections.id', $ids);
+                            return;
+                        }
+                        
                         $url = $this->fetchUrl(
                             $value,
                             (new Collection())->getMorphClass()
@@ -41,11 +55,17 @@ class ProductController extends Controller
             ->tap(function ($query) use ($searchIds) {
                 return empty($searchIds) ? $query : $query->whereIn('id', $searchIds);
             })
-            ->paginate(12);
+            ->paginate()
+            ->appends(request()->query());
+
+        $filters = $request->all()['filter'] ?? [];
+        $sort = $request->all()['sort'] ?? [];
 
         return inertia('products/index', [
             'products' => $products,
-            'collections' => $collections,
+            'search' => $search,
+            'filters' => $filters,
+            'sort' => $sort,
         ]);
     }
 

@@ -123,7 +123,7 @@ function Cart() {
                             <p className="text-sm font-medium">Total:</p>
                             <p className="text-right text-lg font-bold">{getCartLinesPrice(cart.lines)}</p>
                         </div>
-                        <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('order.create')}>
+                        <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('orders.create')}>
                             Checkout
                         </Link>
                     </SheetFooter>

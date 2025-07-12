@@ -4,13 +4,14 @@ import { Product } from '@/types/product';
 import { Link, router } from '@inertiajs/react';
 import { useCallback, useEffect, useState } from 'react';
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
+import { UrlParams } from '@/types';
 
 interface SearchDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    searchParams?: URLSearchParams;
+    urlParams?: UrlParams;
 }
-export default function SearchDialog({ open, onOpenChange, searchParams }: SearchDialogProps) {
+export default function SearchDialog({ open, onOpenChange, urlParams }: SearchDialogProps) {
     const [searchProducts, setSearchProducts] = useState<Product[]>([]);
 
     const [search, setSearch] = useState<string>('');
@@ -24,7 +25,7 @@ export default function SearchDialog({ open, onOpenChange, searchParams }: Searc
                 '/products',
                 {
                     search: query,
-                    ...Object.fromEntries(searchParams || []), // Include any additional search params
+                    ...urlParams,
                 },
                 {
                     preserveState: true,
@@ -34,7 +35,7 @@ export default function SearchDialog({ open, onOpenChange, searchParams }: Searc
             );
             onOpenChange(false);
         },
-        [onOpenChange, searchParams],
+        [onOpenChange, urlParams],
     );
 
     const getSearchProducts = useCallback(async () => {

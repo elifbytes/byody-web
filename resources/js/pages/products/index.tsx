@@ -1,26 +1,73 @@
+import ProductCard from '@/components/product-card';
 import SearchDialog from '@/components/search-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { flattenCollections } from '@/lib/collection';
-import { Paginated } from '@/types';
+import { getPaginationItems } from '@/lib/utils';
+import { Paginated, UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
 import { Product } from '@/types/product';
+import { router, useForm } from '@inertiajs/react';
 import { SearchIcon } from 'lucide-react';
-import { useState } from 'react';
-
-const searchParams = new URLSearchParams();
+import { useEffect, useState } from 'react';
 
 interface ProductPageProps {
     products: Paginated<Product>;
     collections: Collection[];
+    search?: string;
+    filters?: Record<string, string>;
+    sort?: string;
 }
-export default function ProductPage({ products, collections }: ProductPageProps) {
+export default function ProductPage({ products, collections, filters, sort }: ProductPageProps) {
     const flatCollections = flattenCollections(collections);
+    // filters comma separated values to array
+    let filteredCollections: string[] = [];
+    if (filters?.collections) {
+        filteredCollections = filters.collections.split(',');
+    }
     const [openSearch, setOpenSearch] = useState<boolean>(false);
+    const { data, setData, isDirty } = useForm<UrlParams>({
+        filter: filters || {},
+        sort: sort || '',
+    });
 
-    // This component is for displaying a list of products.
+    const currentPage = products.current_page;
+    const lastPage = products.last_page;
+    const perPage = products.per_page;
+    const paginations = getPaginationItems(currentPage, lastPage, perPage);
+
+    // const handleSortChange = (value: string) => {
+    //     setData('sort', value);
+    // };
+
+    const handleFilterChange = (key: string, value: string) => {
+        const newFilters = { ...data.filter, [key]: value };
+        setData('filter', newFilters);
+    };
+
+    useEffect(() => {
+        if (isDirty) {
+            router.get('/products', data, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
+        }
+    }, [data, isDirty]);
+
     return (
         <AppLayout>
             <div className="container mx-auto grid grid-cols-[1fr_3fr] gap-8 px-4 py-8">
@@ -31,7 +78,7 @@ export default function ProductPage({ products, collections }: ProductPageProps)
                                 <SearchIcon className="h-4 w-4" />
                                 Search
                             </Button>
-                            <SearchDialog open={openSearch} onOpenChange={setOpenSearch} searchParams={searchParams} />
+                            <SearchDialog open={openSearch} onOpenChange={setOpenSearch} urlParams={data} />
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -40,11 +87,24 @@ export default function ProductPage({ products, collections }: ProductPageProps)
                             <h2 className="text-lg font-semibold">Collections</h2>
                             <ul className="mt-2 space-y-2">
                                 {flatCollections.map((collection) => (
-                                    <li key={collection.id} className="text-sm">
-                                        <a href={`/collections/${collection.default_url?.slug}`} className="text-blue-600 hover:underline">
-                                            {collection.attribute_data?.name.en}
-                                        </a>
-                                    </li>
+                                    <div className="flex items-center gap-3" key={collection.id}>
+                                        <Checkbox
+                                            id={collection.default_url?.slug}
+                                            className="flex items-center space-x-2"
+                                            checked={
+                                                collection.default_url?.slug ? filteredCollections.includes(collection.default_url?.slug) : false
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                handleFilterChange(
+                                                    'collections',
+                                                    checked
+                                                        ? [...filteredCollections, collection.default_url?.slug].join(',')
+                                                        : filteredCollections.filter((c) => c !== collection.default_url?.slug).join(','),
+                                                )
+                                            }
+                                        />
+                                        <Label htmlFor={collection.default_url?.slug}>{collection.attribute_data?.name.en}</Label>
+                                    </div>
                                 ))}
                             </ul>
                         </div>
@@ -55,18 +115,42 @@ export default function ProductPage({ products, collections }: ProductPageProps)
                     <h1 className="mb-6 text-2xl font-bold">Products</h1>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                         {products.data.map((product) => (
-                            <div key={product.id} className="overflow-hidden rounded-lg bg-white shadow">
-                                <img
-                                    src={product.thumbnail?.original_url}
-                                    alt={product.attribute_data?.name.en}
-                                    className="h-48 w-full object-cover"
-                                />
-                                <div className="p-4">
-                                    <h2 className="text-lg font-semibold">{product.attribute_data?.name.en}</h2>
-                                </div>
-                            </div>
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
+                    <Pagination className="mt-10 flex items-center justify-end px-3">
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href={products.prev_page_url || '#'}
+                                    aria-disabled={currentPage <= 1}
+                                    tabIndex={currentPage <= 1 ? -1 : undefined}
+                                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : undefined}
+                                />
+                            </PaginationItem>
+                            {paginations.map((pageNumber) =>
+                                Number.isNaN(pageNumber) ? (
+                                    <PaginationItem key={pageNumber}>
+                                        <PaginationEllipsis />
+                                    </PaginationItem>
+                                ) : (
+                                    <PaginationItem key={pageNumber}>
+                                        <PaginationLink href={products.links[pageNumber].url || '#'} isActive={pageNumber === products.current_page}>
+                                            {pageNumber}
+                                        </PaginationLink>
+                                    </PaginationItem>
+                                ),
+                            )}
+                            <PaginationItem>
+                                <PaginationNext
+                                    href={products.next_page_url || '#'}
+                                    aria-disabled={currentPage >= lastPage}
+                                    tabIndex={currentPage >= lastPage ? -1 : undefined}
+                                    className={currentPage >= lastPage ? 'pointer-events-none opacity-50' : undefined}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
                 </div>
             </div>
         </AppLayout>
