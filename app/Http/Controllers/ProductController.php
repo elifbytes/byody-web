@@ -63,6 +63,22 @@ class ProductController extends Controller
                         // Handle other cases if necessary
                     }
                 }),
+                AllowedFilter::callback('min_price', function ($query, $value) {
+                    $query->whereHas('variants.prices', function ($q) use ($value) {
+                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
+                        $factor = pow(10, $decimalPlaces);
+                        $value = round($value * $factor);
+                        $q->where('price', '>=', $value);
+                    });
+                }),
+                AllowedFilter::callback('max_price', function ($query, $value) {
+                    $query->whereHas('variants.prices', function ($q) use ($value) {
+                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
+                        $factor = pow(10, $decimalPlaces);
+                        $value = round($value * $factor);
+                        $q->where('price', '<=', $value);
+                    });
+                }),
             ])
             ->tap(function ($query) use ($searchIds) {
                 return empty($searchIds) ? $query : $query->whereIn('id', $searchIds);
