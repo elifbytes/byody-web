@@ -48,16 +48,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Product::resolveRelationUsing(
-        //     'price',
-        //     function (Product $product) {
-        //         return Price::query()
-        //             ->join('product_variants', 'product_variants.id', '=', 'prices.priceable_id')
-        //             ->wherePriceableType('product_variant')
-        //             ->where('product_variants.product_id', $product->id)
-        //             ->select('prices.*')
-        //             ->limit(1);
-        //     }
-        // );
+        \Lunar\Facades\ModelManifest::replace(
+            \Lunar\Models\Contracts\Price::class,
+            \App\Models\Price::class,
+        );
     }
 }
