@@ -13,7 +13,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
-import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import AppLayout from '@/layouts/app-layout';
 import { flattenCollections } from '@/lib/collection';
 import { getPaginationItems } from '@/lib/utils';
@@ -83,8 +83,7 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Separator />
-                        <div className="mt-4">
+                        <div>
                             <h2 className="text-lg font-semibold">Collections</h2>
                             <ul className="mt-2 space-y-2">
                                 {flatCollections.map((collection) => (
@@ -109,7 +108,22 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                                 ))}
                             </ul>
                         </div>
-                        <Separator className="my-4" />
+                        <div>
+                            <h2 className="mt-6 mb-2 text-lg font-semibold">Availability</h2>
+                            <RadioGroup
+                                defaultValue={filters?.availability || 'all'}
+                                onValueChange={(value) => handleFilterChange('availability', value)}
+                            >
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="all" id="all" />
+                                    <Label htmlFor="all">All</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="in-stock" id="in-stock" />
+                                    <Label htmlFor="in-stock">In Stock</Label>
+                                </div>
+                            </RadioGroup>
+                        </div>
                     </CardContent>
                 </Card>
                 <div>

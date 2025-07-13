@@ -40,7 +40,7 @@ class ProductController extends Controller
                             $q->whereIn('collections.id', $ids);
                             return;
                         }
-                        
+
                         $url = $this->fetchUrl(
                             $value,
                             (new Collection())->getMorphClass()
@@ -50,6 +50,18 @@ class ProductController extends Controller
                         }
                         $q->where('collections.id', $url->id);
                     });
+                }),
+                AllowedFilter::callback('availability', function ($query, $value) {
+                    if ($value === 'in-stock') {
+                        $query->whereHas('variants', function ($q) {
+                            $q->where('deleted_at', null)
+                                ->where('stock', '>', 0);
+                        });
+                    } elseif ($value === 'all') {
+                        // No additional filter needed for 'all'
+                    } else {
+                        // Handle other cases if necessary
+                    }
                 }),
             ])
             ->tap(function ($query) use ($searchIds) {
