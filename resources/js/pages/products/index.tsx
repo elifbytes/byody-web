@@ -91,7 +91,7 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                                     <div className="flex items-center gap-3" key={collection.id}>
                                         <Checkbox
                                             id={collection.default_url?.slug}
-                                            className="flex items-center space-x-2"
+                                            className="flex items-center space-x-2 rounded-full"
                                             checked={
                                                 collection.default_url?.slug ? filteredCollections.includes(collection.default_url?.slug) : false
                                             }
