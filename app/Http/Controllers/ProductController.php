@@ -40,7 +40,7 @@ class ProductController extends Controller
                             $q->whereIn('collections.id', $ids);
                             return;
                         }
-                        
+
                         $url = $this->fetchUrl(
                             $value,
                             (new Collection())->getMorphClass()
@@ -49,6 +49,34 @@ class ProductController extends Controller
                             return;
                         }
                         $q->where('collections.id', $url->id);
+                    });
+                }),
+                AllowedFilter::callback('availability', function ($query, $value) {
+                    if ($value === 'in-stock') {
+                        $query->whereHas('variants', function ($q) {
+                            $q->where('deleted_at', null)
+                                ->where('stock', '>', 0);
+                        });
+                    } elseif ($value === 'all') {
+                        // No additional filter needed for 'all'
+                    } else {
+                        // Handle other cases if necessary
+                    }
+                }),
+                AllowedFilter::callback('min_price', function ($query, $value) {
+                    $query->whereHas('variants.prices', function ($q) use ($value) {
+                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
+                        $factor = pow(10, $decimalPlaces);
+                        $value = round($value * $factor);
+                        $q->where('price', '>=', $value);
+                    });
+                }),
+                AllowedFilter::callback('max_price', function ($query, $value) {
+                    $query->whereHas('variants.prices', function ($q) use ($value) {
+                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
+                        $factor = pow(10, $decimalPlaces);
+                        $value = round($value * $factor);
+                        $q->where('price', '<=', $value);
                     });
                 }),
             ])
@@ -84,15 +112,23 @@ class ProductController extends Controller
                 'element.variants.prices',
             ]
         );
-
+    
         if (! $url) {
             abort(404);
         }
-
+    
         $product = $url->element;
-
+        
+        // Get best seller products (you can customize this logic)
+        $bestSellers = Product::with(['thumbnail', 'variants.prices', 'defaultUrl'])
+            ->whereHas('variants.prices')
+            ->inRandomOrder() // For now, we'll use random. You can implement actual best seller logic
+            ->limit(4)
+            ->get();
+    
         return inertia('products/show', [
             'product' => $product,
+            'bestSellers' => $bestSellers,
         ]);
     }
 
