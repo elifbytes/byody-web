@@ -70,7 +70,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     'bg-transparent backdrop-blur-sm'
                 )}
             >
-                <div className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div>
+                <div style={{backgroundColor: '#301D17'}} className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div>
                 <div className="relative flex h-16 items-center px-4">
                     {/* Left side - Mobile Menu + Desktop Navigation */}
                     <div className="flex items-center">
