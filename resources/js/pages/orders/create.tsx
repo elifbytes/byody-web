@@ -87,7 +87,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     }
 
     const handleCreateOrder = () => {
-        post(route('order.store'), {
+        post(route('orders.store'), {
             onSuccess: () => {
                 toast.success('Order created successfully');
             },
@@ -184,7 +184,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                         <RadioGroupItem value={option.identifier} />
                                         <div>
                                             <div className="font-medium">{option.name}</div>
-                                            <div className="text-sm text-muted-foreground">{parse(option.description)}</div>
+                                            <div className="text-sm text-muted-foreground">{parse(option.description || '')}</div>
                                             <div className="text-sm font-medium">{formatPrice(option.price)}</div>
                                         </div>
                                     </div>

@@ -25,8 +25,8 @@ export const getProductVariantPrice = (productVariant?: ProductVariant): string 
         return '-';
     }
 
-    const price = productVariant.prices.find((p) => p.currency?.code === currency);
-
+    const price = productVariant.prices.find((p) => p.price.currency?.code === String(currency));
+    
     if (price) {
         return formatPrice(price.price);
     }

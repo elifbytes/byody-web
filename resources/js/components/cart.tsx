@@ -46,7 +46,7 @@ function Cart() {
             ...data,
             cart_line_id: lineId,
         }));
-        destroy(route('cart.destroy', cart?.id), {
+        destroy(route('carts.destroy', cart?.id), {
             onSuccess: () => {
                 toast.success('Item removed from cart');
             },
