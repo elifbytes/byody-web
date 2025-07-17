@@ -112,15 +112,23 @@ class ProductController extends Controller
                 'element.variants.prices',
             ]
         );
-
+    
         if (! $url) {
             abort(404);
         }
-
+    
         $product = $url->element;
-
+        
+        // Get best seller products (you can customize this logic)
+        $bestSellers = Product::with(['thumbnail', 'variants.prices', 'defaultUrl'])
+            ->whereHas('variants.prices')
+            ->inRandomOrder() // For now, we'll use random. You can implement actual best seller logic
+            ->limit(4)
+            ->get();
+    
         return inertia('products/show', [
             'product' => $product,
+            'bestSellers' => $bestSellers,
         ]);
     }
 
