@@ -18,7 +18,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Menu, Search } from 'lucide-react';
+import { ChevronDown, Menu, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
@@ -53,24 +53,53 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     //navbar setting animation
     const [isScrolled, setIsScrolled] = useState(false);
 
+    const [showNavbar, setShowNavbar] = useState(true);
+
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 0);
-        };
+  let lastScrollY = window.scrollY;
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
 
+    // Scroll ke bawah -> sembunyi
+    // Scroll ke atas -> tampil
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setShowNavbar(false);
+    } else {
+      setShowNavbar(true);
+    }
+
+    // ubah isScrolled hanya jika sudah lewat 50px
+    setIsScrolled(currentScrollY > 50);
+
+    lastScrollY = currentScrollY;
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+    // Add state to track which collection dropdowns are open
+    const [openCollections, setOpenCollections] = useState<Record<string, boolean>>({}); 
+    
+    // Toggle function for collection dropdowns
+    const toggleCollection = (collectionId: string) => {
+        setOpenCollections(prev => ({
+            ...prev,
+            [collectionId]: !prev[collectionId]
+        }));
+    };
+    
     return (
         <>
             <div
-                className={cn(
-                    'sticky top-0 z-50 transition-colors duration-300',
-                    'bg-transparent backdrop-blur-sm'
-                )}
+              className={cn(
+                'sticky top-0 z-50 transition-transform duration-300',
+                isScrolled ? ' bg-transparent/90' : 'bg-transparent',
+                showNavbar ? 'translate-y-0' : '-translate-y-full'
+              )}
             >
-                <div style={{backgroundColor: '#301D17'}} className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div>
+                {/* <div style={{backgroundColor: '#301D17'}} className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div> */}
                 <div className="relative flex h-16 items-center px-4">
                     {/* Left side - Mobile Menu + Desktop Navigation */}
                     <div className="flex items-center">
@@ -96,6 +125,45 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                         <span>{item.title}</span>
                                                     </Link>
                                                 ))}
+                                                {collections.map((collection) =>
+                                                    collection.children?.length ? (
+                                                        <div key={collection.id} className="flex flex-col space-y-2">
+                                                            <button 
+                                                                onClick={() => toggleCollection(collection.id.toString())}
+                                                                className="flex items-center justify-between font-medium"
+                                                            >
+                                                                <span>{collection.attribute_data?.name.en}</span>
+                                                                <ChevronDown 
+                                                                    className={cn(
+                                                                        "h-4 w-4 transition-transform", 
+                                                                        openCollections[collection.id] ? "rotate-180" : ""
+                                                                    )} 
+                                                                />
+                                                            </button>
+                                                            {openCollections[collection.id] && (
+                                                                <div className="ml-4 flex flex-col space-y-2">
+                                                                    {collection.children.map((child) => (
+                                                                        <Link 
+                                                                            key={child.id} 
+                                                                            href={`/products?filter[collections]=${child.default_url?.slug}`}
+                                                                            className="flex items-center space-x-2 text-sm"
+                                                                        >
+                                                                            <span>{child.attribute_data?.name.en}</span>
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <Link 
+                                                            key={collection.id} 
+                                                            href={`/products?filter[collections]=${collection.default_url?.slug}`} 
+                                                            className="flex items-center space-x-2 font-medium"
+                                                        >
+                                                            <span>{collection.attribute_data?.name.en}</span>
+                                                        </Link>
+                                                    )
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -104,7 +172,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </div>
 
                         {/* Desktop Navigation - Moved to left */}
-                        <div className="hidden h-full items-center space-x-6 lg:flex">
+                        <div className="bg-transparent shadow-none hidden h-full items-center space-x-6 lg:flex ">
                             <NavigationMenu className="flex h-full items-stretch" viewport={false}>
                                 <NavigationMenuList className="flex h-full items-stretch space-x-2">
                                     {mainNavItems.map((item, index) => (
