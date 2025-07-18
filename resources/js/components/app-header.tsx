@@ -18,18 +18,18 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Menu, Search } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronDown, Menu, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import Cart from './cart';
 import SearchDialog from './search-dialog';
 
 const mainNavItems: NavItem[] = [
-    {
-        title: 'Home',
-        href: '/',
-    },
+    // {
+    //     title: 'Home',
+    //     href: '/',
+    // },
     {
         title: 'About',
         href: '/about',
@@ -50,17 +50,64 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     const getInitials = useInitials();
 
+    //navbar setting animation
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    const [showNavbar, setShowNavbar] = useState(true);
+
+    useEffect(() => {
+  let lastScrollY = window.scrollY;
+
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+
+    // Scroll ke bawah -> sembunyi
+    // Scroll ke atas -> tampil
+    if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      setShowNavbar(false);
+    } else {
+      setShowNavbar(true);
+    }
+
+    // ubah isScrolled hanya jika sudah lewat 50px
+    setIsScrolled(currentScrollY > 50);
+
+    lastScrollY = currentScrollY;
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
+    // Add state to track which collection dropdowns are open
+    const [openCollections, setOpenCollections] = useState<Record<string, boolean>>({}); 
+    
+    // Toggle function for collection dropdowns
+    const toggleCollection = (collectionId: string) => {
+        setOpenCollections(prev => ({
+            ...prev,
+            [collectionId]: !prev[collectionId]
+        }));
+    };
+    
     return (
         <>
-            <div className="sticky top-0 z-50 border-b border-sidebar-border/80 bg-background">
-                <div className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div>
-                <div className="flex h-16 items-center justify-between px-4">
+            <div
+              className={cn(
+                'sticky top-0 z-50 transition-transform duration-300',
+                isScrolled ? ' bg-transparent/90' : 'bg-transparent',
+                showNavbar ? 'translate-y-0' : '-translate-y-full'
+              )}
+            >
+                {/* <div style={{backgroundColor: '#301D17'}} className="flex justify-center bg-primary p-3 text-background">HOLA BEFRIENDS! BOOST YOUR CONFIDENCE US</div> */}
+                <div className="relative flex h-16 items-center px-4">
+                    {/* Left side - Mobile Menu + Desktop Navigation */}
                     <div className="flex items-center">
                         {/* Mobile Menu */}
                         <div className="lg:hidden">
                             <Sheet>
                                 <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="mr-2 h-[34px] w-[34px]">
+                                    <Button variant="ghost" size="icon" className="mr-2 h-[34px] w-[34px] text-black hover:bg-black/10 dark:text-white dark:hover:bg-white/10">
                                         <Menu className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
@@ -78,6 +125,45 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                         <span>{item.title}</span>
                                                     </Link>
                                                 ))}
+                                                {collections.map((collection) =>
+                                                    collection.children?.length ? (
+                                                        <div key={collection.id} className="flex flex-col space-y-2">
+                                                            <button 
+                                                                onClick={() => toggleCollection(collection.id.toString())}
+                                                                className="flex items-center justify-between font-medium"
+                                                            >
+                                                                <span>{collection.attribute_data?.name.en}</span>
+                                                                <ChevronDown 
+                                                                    className={cn(
+                                                                        "h-4 w-4 transition-transform", 
+                                                                        openCollections[collection.id] ? "rotate-180" : ""
+                                                                    )} 
+                                                                />
+                                                            </button>
+                                                            {openCollections[collection.id] && (
+                                                                <div className="ml-4 flex flex-col space-y-2">
+                                                                    {collection.children.map((child) => (
+                                                                        <Link 
+                                                                            key={child.id} 
+                                                                            href={`/products?filter[collections]=${child.default_url?.slug}`}
+                                                                            className="flex items-center space-x-2 text-sm"
+                                                                        >
+                                                                            <span>{child.attribute_data?.name.en}</span>
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <Link 
+                                                            key={collection.id} 
+                                                            href={`/products?filter[collections]=${collection.default_url?.slug}`} 
+                                                            className="flex items-center space-x-2 font-medium"
+                                                        >
+                                                            <span>{collection.attribute_data?.name.en}</span>
+                                                        </Link>
+                                                    )
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -85,72 +171,76 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             </Sheet>
                         </div>
 
+                        {/* Desktop Navigation - Moved to left */}
+                        <div className="bg-transparent shadow-none hidden h-full items-center space-x-6 lg:flex ">
+                            <NavigationMenu className="flex h-full items-stretch" viewport={false}>
+                                <NavigationMenuList className="flex h-full items-stretch space-x-2">
+                                    {mainNavItems.map((item, index) => (
+                                        <NavigationMenuItem key={index} className="relative flex h-full items-center">
+                                            <Link
+                                                href={item.href}
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    page.url === item.href && activeItemStyles,
+                                                    'h-9 cursor-pointer px-3 text-black hover:bg-black/10 hover:text-black dark:text-white dark:hover:bg-white/10 dark:hover:text-white',
+                                                )}
+                                            >
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                {item.title}
+                                            </Link>
+                                        </NavigationMenuItem>
+                                    ))}
+                                    {collections.map((collection) =>
+                                        (collection.children?.length || 0) > 0 ? (
+                                            <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
+                                                <NavigationMenuTrigger className="text-black hover:bg-black/10 hover:text-black dark:text-white dark:hover:bg-white/10 dark:hover:text-white">{collection.attribute_data?.name.en}</NavigationMenuTrigger>
+                                                <NavigationMenuContent>
+                                                    <ul className="grid w-[300px] gap-4">
+                                                        <li>
+                                                            {collection.children?.map((child) => (
+                                                                <NavigationMenuLink asChild key={child.id}>
+                                                                    <Link href={`/products?filter[collections]=${child.default_url?.slug}`}>
+                                                                        <div className="font-medium">{child.attribute_data?.name.en}</div>
+                                                                    </Link>
+                                                                </NavigationMenuLink>
+                                                            ))}
+                                                        </li>
+                                                    </ul>
+                                                </NavigationMenuContent>
+                                            </NavigationMenuItem>
+                                        ) : (
+                                            <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
+                                                <NavigationMenuLink asChild>
+                                                    <Link
+                                                        href={`/products?filter[collections]=${collection.default_url?.slug}`}
+                                                        className={cn(
+                                                            navigationMenuTriggerStyle(),
+                                                            page.url === `/products?filter[collections]=${collection.default_url?.slug}` &&
+                                                                activeItemStyles,
+                                                            'h-9 px-3 text-black hover:bg-black/10 hover:text-black dark:text-white dark:hover:bg-white/10 dark:hover:text-white',
+                                                        )}
+                                                    >
+                                                        {collection.attribute_data?.name.en}
+                                                    </Link>
+                                                </NavigationMenuLink>
+                                            </NavigationMenuItem>
+                                        ),
+                                    )}
+                                </NavigationMenuList>
+                            </NavigationMenu>
+                        </div>
+                    </div>
+
+                    {/* Center - Logo */}
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform">
                         <Link href="/" prefetch className="flex items-center space-x-2">
                             <AppLogo />
                         </Link>
                     </div>
 
-                    {/* Desktop Navigation */}
-                    <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
-                        <NavigationMenu className="flex h-full items-stretch" viewport={false}>
-                            <NavigationMenuList className="flex h-full items-stretch space-x-2">
-                                {mainNavItems.map((item, index) => (
-                                    <NavigationMenuItem key={index} className="relative flex h-full items-center">
-                                        <Link
-                                            href={item.href}
-                                            className={cn(
-                                                navigationMenuTriggerStyle(),
-                                                page.url === item.href && activeItemStyles,
-                                                'h-9 cursor-pointer px-3',
-                                            )}
-                                        >
-                                            {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                            {item.title}
-                                        </Link>
-                                    </NavigationMenuItem>
-                                ))}
-                                {collections.map((collection) =>
-                                    (collection.children?.length || 0) > 0 ? (
-                                        <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
-                                            <NavigationMenuTrigger>{collection.attribute_data?.name.en}</NavigationMenuTrigger>
-                                            <NavigationMenuContent>
-                                                <ul className="grid w-[300px] gap-4">
-                                                    <li>
-                                                        {collection.children?.map((child) => (
-                                                            <NavigationMenuLink asChild key={child.id}>
-                                                                <Link href={`/products?filter[collections]=${child.default_url?.slug}`}>
-                                                                    <div className="font-medium">{child.attribute_data?.name.en}</div>
-                                                                </Link>
-                                                            </NavigationMenuLink>
-                                                        ))}
-                                                    </li>
-                                                </ul>
-                                            </NavigationMenuContent>
-                                        </NavigationMenuItem>
-                                    ) : (
-                                        <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
-                                            <NavigationMenuLink asChild>
-                                                <Link
-                                                    href={`/products?filter[collections]=${collection.default_url?.slug}`}
-                                                    className={cn(
-                                                        navigationMenuTriggerStyle(),
-                                                        page.url === `/products?filter[collections]=${collection.default_url?.slug}` &&
-                                                            activeItemStyles,
-                                                        'h-9 px-3',
-                                                    )}
-                                                >
-                                                    {collection.attribute_data?.name.en}
-                                                </Link>
-                                            </NavigationMenuLink>
-                                        </NavigationMenuItem>
-                                    ),
-                                )}
-                            </NavigationMenuList>
-                        </NavigationMenu>
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer" onClick={() => setOpenSearch(true)}>
+                    {/* Right side - Search, Cart, User */}
+                    <div className="ml-auto flex items-center space-x-2">
+                        <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer text-black hover:bg-black/10 dark:text-white dark:hover:bg-white/10" onClick={() => setOpenSearch(true)}>
                             <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                         </Button>
                         <SearchDialog open={openSearch} onOpenChange={setOpenSearch} />
@@ -158,7 +248,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         {auth.user ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="size-10 rounded-full p-1">
+                                    <Button variant="ghost" className="size-10 rounded-full p-1 hover:bg-black/10 dark:hover:bg-white/10">
                                         <Avatar className="size-8 overflow-hidden rounded-full">
                                             <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
                                             <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
@@ -173,7 +263,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             </DropdownMenu>
                         ) : (
                             <Link href="/login" className="flex items-center space-x-2">
-                                <Button variant="outline" size="sm">
+                                <Button variant="outline" size="sm" className="border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black">
                                     <span>Login</span>
                                 </Button>
                             </Link>
