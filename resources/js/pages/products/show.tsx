@@ -6,8 +6,8 @@ import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/componen
 import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
 import { formatPrice } from '@/lib/price';
-import { Link, useForm, usePage } from '@inertiajs/react';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
+import { Link, useForm } from '@inertiajs/react';
 import parse from 'html-react-parser';
 import { CheckCircle2, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -203,9 +203,13 @@ function ShowProductPage({ product }: ShowProductPageProps) {
                     <LoadingButton className="mt-4 w-full rounded" loading={processing} onClick={handleAddToCart}>
                         Add to Cart
                     </LoadingButton>
-                    <Link style={{ backgroundColor: '#F97316'}} className={buttonVariants({ className: 'mt-4 w-full' })} href={route('orders.create')}>
-                            Checkout
-                        </Link>
+                    <Link
+                        style={{ backgroundColor: '#F97316' }}
+                        className={buttonVariants({ className: 'mt-4 w-full' })}
+                        href={route('orders.create')}
+                    >
+                        Checkout
+                    </Link>
                     <InputError message={errors.product_variant_id} />
                     <InputError message={errors.quantity} />
                     <div className="mt-10">
