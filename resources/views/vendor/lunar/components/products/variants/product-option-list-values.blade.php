@@ -86,7 +86,7 @@
       <x-filament::button color="gray" size="xs" type="button" wire:click.prevent="addOptionValue('{{ $key }}')">
         {{ __('lunarpanel::components.product-options-list.add-value.label') }}
       </x-filament::button>
-      <hr class="-mt-3.5" />
+      <!-- <hr class="-mt-3.5"/> -->
     </div>
   @endif
 </div>

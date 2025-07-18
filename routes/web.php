@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
+use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
@@ -25,6 +26,8 @@ Route::middleware([
     Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
 
 });
-
+Route::get('/about', function () {
+    return Inertia::render('about');
+});
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
