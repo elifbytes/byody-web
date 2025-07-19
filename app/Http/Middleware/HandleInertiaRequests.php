@@ -44,7 +44,7 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $collections = Collection::with(['thumbnail', 'defaultUrl'])->get()->toTree();
+        $collections = Collection::with(['thumbnail', 'defaultUrl'])->orderBy('_lft')->get()->toTree();
         $cart = CartSession::current(calculate: false);
 
         return [

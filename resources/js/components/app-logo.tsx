@@ -1,13 +1,14 @@
 import AppLogoIcon from './app-logo-icon';
 
-export default function AppLogo() {
+interface AppLogoProps {
+    className?: string;
+}
+export default function AppLogo({ className }: AppLogoProps) {
     return (
         <>
-            <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                <AppLogoIcon className="size-5 text-white dark:text-black" />
-            </div>
+            <AppLogoIcon className={className} />
             <div className="ml-1 grid flex-1 text-left text-sm">
-                <span className="mb-0.5 truncate leading-tight font-semibold">Byody</span>
+                <span className={`mb-0.5 truncate leading-tight font-semibold ${className}`}>Byody</span>
             </div>
         </>
     );

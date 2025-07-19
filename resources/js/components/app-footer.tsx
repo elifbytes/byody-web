@@ -1,19 +1,30 @@
 import { Instagram, MessageCircleMore, Music2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
-
 function AppFooter() {
     return (
-        <footer className="bg-[#301D17] px-6 pt-10 pb-6 text-[#d6dc9b]">
+        <footer className="bg-primary px-6 pt-10 pb-6 text-[#d6dc9b]">
             <div className="mx-auto flex max-w-7xl flex-col items-center space-y-20 text-center">
                 {/* Menu Links */}
                 <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
-                    <a href="#" className="hover:underline">About Us</a>
-                    <a href="#" className="hover:underline">Contact Us</a>
-                    <a href="#" className="hover:underline">FAQs</a>
-                    <a href="#" className="hover:underline">Terms of Service</a>
-                    <a href="#" className="hover:underline">Privacy Policy</a>
-                    <a href="#" className="hover:underline">Refund Policy</a>
+                    <a href="#" className="hover:underline">
+                        About Us
+                    </a>
+                    <a href="#" className="hover:underline">
+                        Contact Us
+                    </a>
+                    <a href="#" className="hover:underline">
+                        FAQs
+                    </a>
+                    <a href="#" className="hover:underline">
+                        Terms of Service
+                    </a>
+                    <a href="#" className="hover:underline">
+                        Privacy Policy
+                    </a>
+                    <a href="#" className="hover:underline">
+                        Refund Policy
+                    </a>
                 </div>
 
                 {/* Social Icons */}
@@ -33,7 +44,7 @@ function AppFooter() {
                 </div>
 
                 {/* Copyright */}
-                 <div className="text-xs flex items-center justify-center space-x-2">
+                <div className="flex items-center justify-center space-x-2 text-xs">
                     <span>&copy; {new Date().getFullYear()}</span>
                     <AppLogo />
                     <span>– All rights reserved.</span>
