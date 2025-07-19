@@ -61,7 +61,9 @@ export function AppHeader() {
                                             {collections.map((collection) =>
                                                 (collection.children?.length || 0) > 0 ? (
                                                     <div key={collection.id} className="flex flex-col space-y-2">
-                                                        <span className="font-medium">{collection.attribute_data?.name.en}</span>
+                                                        <Link href="/products" className="font-medium">
+                                                            {collection.attribute_data?.name.en}
+                                                        </Link>
                                                         {collection.children?.map((child) => (
                                                             <Link
                                                                 key={child.id}
@@ -103,7 +105,7 @@ export function AppHeader() {
                                     (collection.children?.length || 0) > 0 ? (
                                         <NavigationMenuItem key={collection.id} className="relative flex h-full items-center">
                                             <NavigationMenuTrigger className="text-md bg-transparent p-0 font-normal text-background hover:bg-transparent hover:text-background hover:underline focus:bg-transparent focus:text-background data-[active=true]:bg-transparent data-[active=true]:text-accent-foreground data-[state=open]:bg-transparent">
-                                                {collection.attribute_data?.name.en}
+                                                <Link href="/products">{collection.attribute_data?.name.en}</Link>
                                             </NavigationMenuTrigger>
                                             <NavigationMenuContent>
                                                 <ul className="grid w-[300px] gap-4">
