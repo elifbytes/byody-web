@@ -14,6 +14,15 @@ import {
 } from '@/components/ui/drawer';
 
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
@@ -22,25 +31,32 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import { getPaginationItems } from '@/lib/utils';
 import { Paginated } from '@/types';
 import { Collection } from '@/types/collection';
-import { Product } from '@/types/product';
-import { Filter } from 'lucide-react';
+import { Product, ProductType } from '@/types/product';
+import { ArrowDownUp, Settings2 } from 'lucide-react';
 
 interface ProductPageProps {
+    productTypes: ProductType[];
     products: Paginated<Product>;
     collections: Collection[];
     search?: string;
     filters?: Record<string, string>;
     sort?: string;
 }
-export default function ProductPage({ products, collections, filters, sort }: ProductPageProps) {
+export default function ProductPage({ productTypes, products, collections, filters, sort }: ProductPageProps) {
     const currentPage = products.current_page;
     const lastPage = products.last_page;
     const perPage = products.per_page;
     const paginations = getPaginationItems(currentPage, lastPage, perPage);
+
+    const handleSortChange = (value: string) => {
+        // Handle sort change logic here, e.g., update state or make an API call
+        console.log('Sort changed to:', value);
+    };
 
     return (
         <AppLayout>
@@ -49,7 +65,7 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                 <Drawer>
                     <DrawerTrigger className="md:hidden" asChild>
                         <Button variant="outline">
-                            <Filter className="h-4 w-4" />
+                            <Settings2 className="h-4 w-4" />
                             Filters
                         </Button>
                     </DrawerTrigger>
@@ -58,9 +74,9 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                             <DrawerTitle>Filters</DrawerTitle>
                             <DrawerDescription>Use the filters to narrow down your product search.</DrawerDescription>
                         </DrawerHeader>
-                        <div className="p-6">
-                            <ProductFilterForm collections={collections} filters={filters} sort={sort} />
-                        </div>
+                        <ScrollArea className="h-[calc(100vh-350px)] w-full p-4">
+                            <ProductFilterForm productTypes={productTypes} collections={collections} filters={filters} sort={sort} />
+                        </ScrollArea>
                         <DrawerFooter>
                             <DrawerClose asChild>
                                 <Button>Close</Button>
@@ -75,11 +91,33 @@ export default function ProductPage({ products, collections, filters, sort }: Pr
                         <CardDescription></CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <ProductFilterForm collections={collections} filters={filters} sort={sort} />
+                        <ProductFilterForm productTypes={productTypes} collections={collections} filters={filters} sort={sort} />
                     </CardContent>
                 </Card>
                 <div>
-                    <h1 className="mb-6 text-2xl font-bold">Products</h1>
+                    <div className="mb-4 flex items-center justify-between">
+                        <h1 className="text-2xl font-bold">Products</h1>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <ArrowDownUp className="h-4 w-4" />
+                                    Sort By
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56">
+                                <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuRadioGroup value={sort} onValueChange={handleSortChange}>
+                                    <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="price-asc">Price: Low to High</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="price-desc">Price: High to Low</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="name-asc">Name: A to Z</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="name-desc">Name: Z to A</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                     <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
                         {products.data.map((product) => (
                             <ProductCard key={product.id} product={product} />

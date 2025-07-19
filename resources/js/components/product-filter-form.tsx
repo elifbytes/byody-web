@@ -6,13 +6,15 @@ import { Slider } from '@/components/ui/slider';
 import { flattenCollections } from '@/lib/collection';
 import { UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
+import { ProductType } from '@/types/product';
 import { router } from '@inertiajs/react';
 import { SearchIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
 import SearchDialog from './search-dialog';
+import { Button } from './ui/button';
 
 interface ProductFilterFormProps {
+    productTypes: ProductType[];
     collections: Collection[];
     filters?: Record<string, string>;
     sort?: string;
@@ -20,7 +22,7 @@ interface ProductFilterFormProps {
 
 const MAX_SLIDER_VALUE = 500; // Maximum value for the price slider
 
-export default function ProductFilterForm({ collections, filters, sort }: ProductFilterFormProps) {
+export default function ProductFilterForm({ productTypes, collections, filters, sort }: ProductFilterFormProps) {
     const [openSearch, setOpenSearch] = useState<boolean>(false);
     const urlParams: UrlParams = {
         filter: filters || {},
@@ -28,10 +30,17 @@ export default function ProductFilterForm({ collections, filters, sort }: Produc
     };
     const flatCollections = flattenCollections(collections);
     // filters comma separated values to array
+    // for collections
     let filteredCollections: string[] = [];
     if (filters?.collections) {
         filteredCollections = filters.collections.split(',');
     }
+    // for product types
+    let filteredProductTypes: string[] = [];
+    if (filters?.product_types) {
+        filteredProductTypes = filters.product_types.split(',');
+    }
+
     const [priceSliderValue, setPriceSliderValue] = useState([Number(filters?.min_price || 0), Number(filters?.max_price || MAX_SLIDER_VALUE)]);
 
     // const handleSortChange = (value: string) => {
@@ -52,12 +61,37 @@ export default function ProductFilterForm({ collections, filters, sort }: Produc
 
     return (
         <>
-            <Button variant="outline" className="flex w-full justify-start mb-4" onClick={() => setOpenSearch(true)}>
+            <Button variant="outline" className="mb-4 flex w-full justify-start" onClick={() => setOpenSearch(true)}>
                 <SearchIcon className="h-4 w-4" />
                 Search
             </Button>
             <SearchDialog open={openSearch} onOpenChange={setOpenSearch} urlParams={urlParams} />
             <div>
+                <h2 className="text-lg font-semibold">Product Types</h2>
+                <ul className="mt-2 space-y-2">
+                    {productTypes.map((type) => (
+                        <div className="flex items-center gap-3" key={type.id}>
+                            <Checkbox
+                                id={`type-${type.id}`}
+                                className="flex items-center space-x-2 rounded-full"
+                                checked={filteredProductTypes.includes(type.id.toString())}
+                                onCheckedChange={(checked) =>
+                                    handleFilterChange([
+                                        {
+                                            filter: 'product_types',
+                                            value: checked
+                                                ? [...filteredProductTypes, type.id.toString()].join(',')
+                                                : filteredProductTypes.filter((t) => t !== type.id.toString()).join(','),
+                                        },
+                                    ])
+                                }
+                            />
+                            <Label htmlFor={`type-${type.id}`}>{type.name}</Label>
+                        </div>
+                    ))}
+                </ul>
+            </div>
+            <div className="mt-6">
                 <h2 className="text-lg font-semibold">Collections</h2>
                 <ul className="mt-2 space-y-2">
                     {flatCollections.map((collection) => (

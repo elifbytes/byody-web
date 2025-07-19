@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import LoadingButton from '@/components/loading-button';
+import ProductsCarousel from '@/components/products-carousel';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
@@ -17,7 +18,7 @@ interface ShowProductPageProps {
     product: Product;
     bestSellers: Product[];
 }
-function ShowProductPage({ product }: ShowProductPageProps) {
+function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const prices = product.variants?.[0]?.prices;
     const price = prices?.[0]?.price;
     const comparePrice = prices?.[0]?.compare_price;
@@ -216,6 +217,10 @@ function ShowProductPage({ product }: ShowProductPageProps) {
                         <div className="prose">{product.attribute_data?.description && parse(product.attribute_data.description.en)}</div>
                     </div>
                 </div>
+            </div>
+            <div className="mb-4">
+                <h1 className="my-5 text-center text-3xl">BEST SELLERS</h1>
+                <ProductsCarousel products={bestSellers} />
             </div>
         </AppLayout>
     );

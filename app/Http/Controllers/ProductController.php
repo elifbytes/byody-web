@@ -6,6 +6,7 @@ use App\Traits\FetchesUrls;
 use Illuminate\Http\Request;
 use Lunar\Models\Collection;
 use Lunar\Models\Product;
+use Lunar\Models\ProductType;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -24,6 +25,7 @@ class ProductController extends Controller
         $products = QueryBuilder::for(Product::class)
             ->with(['thumbnail', 'variants.prices', 'defaultUrl'])
             ->allowedFilters([
+                AllowedFilter::exact('product_types', 'product_type_id'),
                 AllowedFilter::callback('collections', function ($query, $value) {
                     $query->whereHas('collections', function ($q) use ($value) {
                         if (is_array($value)) {
@@ -83,13 +85,15 @@ class ProductController extends Controller
             ->tap(function ($query) use ($searchIds) {
                 return empty($searchIds) ? $query : $query->whereIn('id', $searchIds);
             })
-            ->paginate()
+            ->paginate(12)
             ->appends(request()->query());
 
+        $productTypes = ProductType::all();
         $filters = $request->all()['filter'] ?? [];
         $sort = $request->all()['sort'] ?? [];
 
         return inertia('products/index', [
+            'productTypes' => $productTypes,
             'products' => $products,
             'search' => $search,
             'filters' => $filters,
@@ -112,20 +116,25 @@ class ProductController extends Controller
                 'element.variants.prices',
             ]
         );
-    
+
         if (! $url) {
             abort(404);
         }
-    
+
         $product = $url->element;
-        
-        // Get best seller products (you can customize this logic)
-        $bestSellers = Product::with(['thumbnail', 'variants.prices', 'defaultUrl'])
-            ->whereHas('variants.prices')
-            ->inRandomOrder() // For now, we'll use random. You can implement actual best seller logic
-            ->limit(4)
+
+        $bestSellers = Product::query()
+            ->with(['thumbnail', 'defaultUrl', 'variants.prices'])
+            ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
+            ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
+            ->select('products.*')
+            ->where('products.status', 'published')
+            ->whereType('physical')
+            ->groupBy('products.id')
+            ->orderByRaw('COUNT(order_lines.id) DESC')
+            ->take(10)
             ->get();
-    
+
         return inertia('products/show', [
             'product' => $product,
             'bestSellers' => $bestSellers,
