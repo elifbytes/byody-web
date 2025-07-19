@@ -23,6 +23,7 @@ export const NotificationBadge = ({
       {children}
       {showBadge && (
         <Badge
+          variant='secondary'
           className={cn(
             'absolute top-0 right-0 rounded-full',
             typeof label !== 'undefined' && ('' + label).length === 0

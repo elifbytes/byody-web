@@ -26,7 +26,7 @@ export const getProductVariantPrice = (productVariant?: ProductVariant): string 
     }
 
     const price = productVariant.prices.find((p) => p.price.currency?.code === String(currency));
-    
+
     if (price) {
         return formatPrice(price.price);
     }
@@ -38,12 +38,12 @@ export const getCartLinesPrice = (lines: CartLine[]): string => {
     if (!lines || lines.length === 0) return '-';
 
     const total = lines.reduce((sum, line) => {
-        const value = line.purchasable?.prices?.find((p) => p.currency?.code === currency)?.price?.value || 0;
+        const value = line.purchasable?.prices?.find((p) => p.price.currency?.code === currency)?.price?.value || 0;
         const quantity = line.quantity || 1;
         return sum + value * quantity;
     }, 0);
 
-    const firstCurrency = lines[0].purchasable?.prices?.[0]?.currency;
+    const firstCurrency = lines[0].purchasable?.prices?.[0]?.price.currency;
     if (!firstCurrency) return '-';
 
     const price: CastedPrice = {
