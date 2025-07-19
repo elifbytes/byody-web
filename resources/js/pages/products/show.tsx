@@ -204,13 +204,28 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                     <LoadingButton className="mt-4 w-full rounded" loading={processing} onClick={handleAddToCart}>
                         Add to Cart
                     </LoadingButton>
-                    <Link
+                    <LoadingButton 
                         style={{ backgroundColor: '#F97316' }}
                         className={buttonVariants({ className: 'mt-4 w-full' })}
-                        href={route('orders.create')}
+                        loading={processing}
+                        onClick={() => {
+                            if (!selectedVariant) return;
+                            // Transform the form data to include selected variant and quantity
+                            transform((data) => ({
+                                ...data,
+                                product_variant_id: selectedVariant.id,
+                                quantity: quantity,
+                            }));
+                            post(route('orders.direct-checkout'), {
+                                onError: (error) => {
+                                    console.error('Error during checkout:', error);
+                                    toast.error('Failed to checkout. Please try again.');
+                                },
+                            });
+                        }}
                     >
                         Checkout
-                    </Link>
+                    </LoadingButton>
                     <InputError message={errors.product_variant_id} />
                     <InputError message={errors.quantity} />
                     <div className="mt-10">

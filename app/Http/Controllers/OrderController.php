@@ -7,6 +7,7 @@ use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Country;
+use Lunar\Models\ProductVariant;
 
 class OrderController extends Controller
 {
@@ -34,6 +35,13 @@ class OrderController extends Controller
         }
 
         $cart = CartSession::current();
+        
+        // Check if cart exists
+        if (!$cart) {
+            return redirect()->route('products.index')
+                ->with('error', 'Your shopping cart is empty. Please add products before checkout.');
+        }
+        
         $cart->calculation = [
             'total' => $cart->total,
             'subTotal' => $cart->subTotal,
@@ -62,6 +70,13 @@ class OrderController extends Controller
     {
         try {
             $cart = CartSession::current();
+            
+            // Check if cart exists
+            if (!$cart) {
+                return redirect()->route('products.index')
+                    ->with('error', 'Your shopping cart is empty. Please add products before checkout.');
+            }
+            
             $cart->createOrder();
 
             CartSession::forget();
@@ -153,5 +168,28 @@ class OrderController extends Controller
             $address->update($data);
         }
         return redirect()->back();
+    }
+
+    /**
+     * Direct checkout from product page
+     */
+    public function directCheckout(Request $request)
+    {
+        $request->validate([
+            'product_variant_id' => 'required|exists:product_variants,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        // Forget any existing cart to start fresh
+        CartSession::forget();
+        
+        // Get the product variant
+        $productVariant = ProductVariant::findOrFail($request->product_variant_id);
+        
+        // Add the product to a new cart
+        CartSession::manager()->add($productVariant, $request->quantity);
+        
+        // Redirect to the create order page
+        return redirect()->route('orders.create');
     }
 }

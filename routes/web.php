@@ -24,7 +24,8 @@ Route::middleware([
     Route::put('carts/set-shipping-option/{identifier}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
 
     Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
-
+    // Tambahkan route ini di bagian routes yang sesuai
+    Route::post('orders/direct-checkout', [OrderController::class, 'directCheckout'])->name('orders.direct-checkout');
 });
 Route::get('/about', function () {
     return Inertia::render('about');
