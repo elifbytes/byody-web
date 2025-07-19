@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { formatPrice } from '@/lib/price';
 import { Address } from '@/types/address';
@@ -84,7 +85,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                 toast.error('Failed to change shipping option');
             },
         });
-    }
+    };
 
     const handleCreateOrder = () => {
         post(route('orders.store'), {
@@ -120,7 +121,9 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                 <DialogTitle>Edit Address</DialogTitle>
                                 <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
                             </DialogHeader>
-                            <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                            <ScrollArea className="h-[calc(100vh-200px)]">
+                                <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                            </ScrollArea>
                             <LoadingButton loading={processing} onClick={handleAddAddress}>
                                 Save Address
                             </LoadingButton>
@@ -160,7 +163,9 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                                     <DialogTitle>Edit Address</DialogTitle>
                                                     <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
                                                 </DialogHeader>
-                                                <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                                                <ScrollArea className="h-[calc(100vh-200px)]">
+                                                    <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                                                </ScrollArea>
                                                 <LoadingButton loading={processing} onClick={() => handleUpdateAddress(address.id)}>
                                                     Save Changes
                                                 </LoadingButton>
@@ -173,10 +178,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                     </RadioGroup>
                     <Separator />
                     <Heading title="Shipping Options" description="Select a shipping option for your order" />
-                    <RadioGroup
-                        value={cart?.shipping_option?.identifier || ''}
-                        onValueChange={(handleSetShippingOption)}
-                    >
+                    <RadioGroup value={cart?.shipping_option?.identifier || ''} onValueChange={handleSetShippingOption}>
                         {shippingOptions?.map((option) => (
                             <Card key={option.identifier} className="mb-2">
                                 <CardHeader>
