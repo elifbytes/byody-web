@@ -29,7 +29,11 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-export function AppHeader() {
+interface AppHeaderProps {
+    position?: 'fixed' | 'sticky';
+}
+
+export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth, collections } = page.props;
 
@@ -39,8 +43,8 @@ export function AppHeader() {
 
     return (
         <>
-            <div className="fixed top-0 z-30 h-16 w-full bg-primary"></div>
-            <div className="sticky top-0 z-50">
+            {position === 'fixed' && <div className="fixed top-0 z-30 h-16 w-full bg-primary"></div>}
+            <div className={`${position} top-0 z-50 ${position === 'sticky' ? 'bg-primary' : 'w-full'}`}>
                 <div className="grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
                     {/* Mobile Menu */}
                     <div className="lg:hidden">
