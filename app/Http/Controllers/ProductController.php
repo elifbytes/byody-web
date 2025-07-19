@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\QueryBuilder\Sorts\ProductNameSort;
+use App\QueryBuilder\Sorts\ProductPriceSort;
 use App\Traits\FetchesUrls;
 use Illuminate\Http\Request;
 use Lunar\Models\Collection;
 use Lunar\Models\Product;
 use Lunar\Models\ProductType;
 use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class ProductController extends Controller
@@ -81,6 +84,11 @@ class ProductController extends Controller
                         $q->where('price', '<=', $value);
                     });
                 }),
+            ])
+            ->allowedSorts([
+                AllowedSort::custom('name', new ProductNameSort()),
+                AllowedSort::custom('price', new ProductPriceSort()),
+                AllowedSort::field('date', 'created_at'),
             ])
             ->tap(function ($query) use ($searchIds) {
                 return empty($searchIds) ? $query : $query->whereIn('id', $searchIds);

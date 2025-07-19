@@ -34,9 +34,10 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import { getPaginationItems } from '@/lib/utils';
-import { Paginated } from '@/types';
+import { Paginated, UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
 import { Product, ProductType } from '@/types/product';
+import { router } from '@inertiajs/react';
 import { ArrowDownUp, Settings2 } from 'lucide-react';
 
 interface ProductPageProps {
@@ -53,10 +54,12 @@ export default function ProductPage({ productTypes, products, collections, filte
     const perPage = products.per_page;
     const paginations = getPaginationItems(currentPage, lastPage, perPage);
 
-    const handleSortChange = (value: string) => {
-        // Handle sort change logic here, e.g., update state or make an API call
-        console.log('Sort changed to:', value);
+    const urlParams: UrlParams = {
+        filter: filters || {},
+        sort: sort || '',
     };
+    const handleSortChange = (value: string) =>
+        router.get('/products', { ...urlParams, sort: value }, { preserveState: true, preserveScroll: true, replace: true });
 
     return (
         <AppLayout>
@@ -108,12 +111,12 @@ export default function ProductPage({ productTypes, products, collections, filte
                                 <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuRadioGroup value={sort} onValueChange={handleSortChange}>
-                                    <DropdownMenuRadioItem value="newest">Newest</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="oldest">Oldest</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="price-asc">Price: Low to High</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="price-desc">Price: High to Low</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="name-asc">Name: A to Z</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="name-desc">Name: Z to A</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="date">Newest</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="-date">Oldest</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="price">Price: Low to High</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="-price">Price: High to Low</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="name">Name: A to Z</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="-name">Name: Z to A</DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
