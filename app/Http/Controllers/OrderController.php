@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\ShippingManifest;
+use Lunar\Models\Cart;
 use Lunar\Models\Country;
 use Lunar\Models\ProductVariant;
 
@@ -16,7 +18,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = request()->user()->orders()->with(['addresses', 'items'])->latest()->get();
+        $orders = request()->user()->orders()->with(['addresses'])->latest()->get();
 
         return inertia('orders/index', [
             'orders' => $orders
@@ -26,22 +28,16 @@ class OrderController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Cart $cart = null)
     {
         $countries = Country::all();
-        $customer = request()->user()->customers()->latest()->first();
+        $customer = request()->user()->latestCustomer();
         if ($customer) {
             $customer->load('addresses');
         }
 
-        $cart = CartSession::current();
-        
-        // Check if cart exists
-        if (!$cart) {
-            return redirect()->route('products.index')
-                ->with('error', 'Your shopping cart is empty. Please add products before checkout.');
-        }
-        
+        $cart = $cart ?: CartSession::current();
+        $cart->calculate();
         $cart->calculation = [
             'total' => $cart->total,
             'subTotal' => $cart->subTotal,
@@ -69,17 +65,15 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         try {
-            $cart = CartSession::current();
-            
-            // Check if cart exists
-            if (!$cart) {
-                return redirect()->route('products.index')
-                    ->with('error', 'Your shopping cart is empty. Please add products before checkout.');
-            }
-            
+            $data = $request->validate([
+                'cart_id' => 'nullable|exists:carts,id',
+            ]);
+
+            $cart = Cart::find($data['cart_id']) ?: CartSession::current();
+
             $cart->createOrder();
 
-            CartSession::forget();
+            Cart::destroy($cart->id);
         } catch (CartException $ce) {
             return redirect()->back()->withErrors(['cart' => $ce->getMessage()]);
         }
@@ -175,21 +169,27 @@ class OrderController extends Controller
      */
     public function directCheckout(Request $request)
     {
-        $request->validate([
-            'product_variant_id' => 'required|exists:product_variants,id',
-            'quantity' => 'required|integer|min:1',
+        $data = $request->validate([
+            'product_variant_id' => ['required', 'exists:product_variants,id'],
+            'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        // Forget any existing cart to start fresh
-        CartSession::forget();
-        
-        // Get the product variant
-        $productVariant = ProductVariant::findOrFail($request->product_variant_id);
-        
-        // Add the product to a new cart
-        CartSession::manager()->add($productVariant, $request->quantity);
-        
-        // Redirect to the create order page
-        return redirect()->route('orders.create');
+        $productVariant = ProductVariant::findOrFail($data['product_variant_id']);
+
+        $cart = Cart::create([
+            'currency_id' => CartSession::getCurrency()->id,
+            'channel_id' => CartSession::getChannel()->id,
+            'user_id' => optional(request()->user())->id,
+            'customer_id' => optional(request()->user())->latestCustomer()?->id,
+        ]);
+
+        try {
+            $cart->add($productVariant, $data['quantity']);
+        } catch (\Lunar\Exceptions\Carts\CartException $e) {
+            $error = $e->getMessage();
+            throw ValidationException::withMessages(['order' => $error]);
+        }
+
+        return redirect()->route('orders.create', $cart->id);
     }
 }

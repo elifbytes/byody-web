@@ -63,40 +63,57 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     const handleSetAddress = (addressId: number) => {
         const selectedAddress = addresses.find((a) => a.id === addressId);
         if (selectedAddress) {
-            put(route('carts.set-address', selectedAddress.id), {
-                onSuccess: () => {
-                    toast.success('Address selected successfully');
+            put(
+                route('carts.set-address', {
+                    addressId: selectedAddress.id,
+                    cart: cart.id,
+                }),
+                {
+                    onSuccess: () => {
+                        toast.success('Address selected successfully');
+                    },
+                    onError: (errors) => {
+                        console.error('Error changing address:', errors);
+                        toast.error('Failed to set address');
+                    },
                 },
-                onError: (errors) => {
-                    console.error('Error changing address:', errors);
-                    toast.error('Failed to set address');
-                },
-            });
+            );
         }
     };
 
     const handleSetShippingOption = (identifier: string) => {
-        put(route('carts.set-shipping-option', identifier), {
-            onSuccess: () => {
-                toast.success('Shipping option selected successfully');
+        put(
+            route('carts.set-shipping-option', {
+                identifier,
+                cart: cart.id,
+            }),
+            {
+                onSuccess: () => {
+                    toast.success('Shipping option selected successfully');
+                },
+                onError: (errors) => {
+                    console.error('Error changing shipping option:', errors);
+                    toast.error('Failed to change shipping option');
+                },
             },
-            onError: (errors) => {
-                console.error('Error changing shipping option:', errors);
-                toast.error('Failed to change shipping option');
-            },
-        });
+        );
     };
 
     const handleCreateOrder = () => {
-        post(route('orders.store'), {
-            onSuccess: () => {
-                toast.success('Order created successfully');
+        post(
+            route('orders.store', {
+                cart_id: cart.id,
+            }),
+            {
+                onSuccess: () => {
+                    toast.success('Order created successfully');
+                },
+                onError: (errors) => {
+                    console.error('Error creating order:', errors);
+                    toast.error(errors.cart);
+                },
             },
-            onError: (errors) => {
-                console.error('Error creating order:', errors);
-                toast.error(errors.cart);
-            },
-        });
+        );
     };
 
     return (

@@ -93,9 +93,9 @@ class CartController extends Controller
     /**
      * Set the shipping and biling address for the cart.
      */
-    public function setAddress(string $addressId)
+    public function setAddress(string $addressId, ?Cart $cart = null)
     {
-        $cart = CartSession::current();
+        $cart = $cart ?: CartSession::current();
         /** @var \App\Models\User */
         $user = Auth::user();
         $customer = $user->customers()->latest()->first();
@@ -115,9 +115,9 @@ class CartController extends Controller
     /**
      * Set the shipping option for the cart.
      */
-    public function setShippingOption(string $identifier)
+    public function setShippingOption(string $identifier, ?Cart $cart = null)
     {
-        $cart = CartSession::current();
+        $cart = $cart ?: CartSession::current();
 
         $shippingOptions = ShippingManifest::getOptions($cart);
 

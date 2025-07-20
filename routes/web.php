@@ -18,17 +18,20 @@ Route::middleware([
     'auth',
     ValidateSessionWithWorkOS::class,
 ])->group(function () {
-    Route::resource('orders', OrderController::class);
-    
-    Route::put('carts/set-address/{addressId}', [CartController::class, 'setAddress'])->name('carts.set-address');
-    Route::put('carts/set-shipping-option/{identifier}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
+    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/create/{cart?}', [OrderController::class, 'create'])->name('orders.create');
+    Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+    Route::post('orders/direct-checkout', [OrderController::class, 'directCheckout'])->name('orders.direct-checkout');
+
+    Route::put('carts/set-address/{addressId}/{cart?}', [CartController::class, 'setAddress'])->name('carts.set-address');
+    Route::put('carts/set-shipping-option/{identifier}/{cart?}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
 
     Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
-    // Tambahkan route ini di bagian routes yang sesuai
-    Route::post('orders/direct-checkout', [OrderController::class, 'directCheckout'])->name('orders.direct-checkout');
 });
+
 Route::get('/about', function () {
     return Inertia::render('about');
 });
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

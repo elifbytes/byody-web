@@ -2,13 +2,13 @@ import InputError from '@/components/input-error';
 import LoadingButton from '@/components/loading-button';
 import ProductsCarousel from '@/components/products-carousel';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
 import { formatPrice } from '@/lib/price';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
-import { Link, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import parse from 'html-react-parser';
 import { CheckCircle2, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -28,6 +28,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const [selectedValues, setSelectedValues] = useState<ProductOptionValue[]>();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
     const [quantity, setQuantity] = useState<number>(1);
+    const [processingType, setProcessingType] = useState<'addToCart' | 'directCheckout'>();
 
     const { post, processing, errors, transform } = useForm({
         product_variant_id: selectedVariant?.id,
@@ -40,6 +41,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     };
 
     const handleAddToCart = () => {
+        setProcessingType('addToCart');
         if (!selectedVariant) return;
         // Transform the form data to include selected variant and quantity
         transform((data) => ({
@@ -58,6 +60,23 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
             onError: (error) => {
                 console.error('Error adding to cart:', error);
                 toast.error('Failed to add product to cart. Please try again.');
+            },
+        });
+    };
+
+    const handleDirectCheckout = () => {
+        setProcessingType('directCheckout');
+        if (!selectedVariant) return;
+        // Transform the form data to include selected variant and quantity
+        transform((data) => ({
+            ...data,
+            product_variant_id: selectedVariant.id,
+            quantity: quantity,
+        }));
+        post(route('orders.direct-checkout'), {
+            onError: (error) => {
+                console.error('Error during checkout:', error);
+                toast.error('Failed to checkout. Please try again.');
             },
         });
     };
@@ -201,28 +220,20 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                             <Plus className="h-4 w-4" />
                         </Button>
                     </div>
-                    <LoadingButton className="mt-4 w-full rounded" loading={processing} onClick={handleAddToCart}>
+                    <LoadingButton
+                        className="mt-4 w-full rounded"
+                        disabled={!selectedVariant}
+                        loading={processing && processingType === 'addToCart'}
+                        onClick={handleAddToCart}
+                    >
                         Add to Cart
                     </LoadingButton>
-                    <LoadingButton 
-                        style={{ backgroundColor: '#F97316' }}
-                        className={buttonVariants({ className: 'mt-4 w-full' })}
-                        loading={processing}
-                        onClick={() => {
-                            if (!selectedVariant) return;
-                            // Transform the form data to include selected variant and quantity
-                            transform((data) => ({
-                                ...data,
-                                product_variant_id: selectedVariant.id,
-                                quantity: quantity,
-                            }));
-                            post(route('orders.direct-checkout'), {
-                                onError: (error) => {
-                                    console.error('Error during checkout:', error);
-                                    toast.error('Failed to checkout. Please try again.');
-                                },
-                            });
-                        }}
+                    <LoadingButton
+                        className="mt-4 w-full rounded"
+                        variant="destructive"
+                        loading={processing && processingType === 'directCheckout'}
+                        disabled={!selectedVariant}
+                        onClick={handleDirectCheckout}
                     >
                         Checkout
                     </LoadingButton>
