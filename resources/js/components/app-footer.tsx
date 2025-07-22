@@ -57,7 +57,7 @@ function AppFooter() {
                 {/* Copyright */}
                 <div className="flex items-center justify-center space-x-2 text-xs text-background">
                     <span>&copy; {new Date().getFullYear()}</span>
-                    <AppLogo />
+                    <AppLogo className="fill-background" width={50} />
                     <span>- All rights reserved.</span>
                 </div>
             </div>

@@ -149,7 +149,7 @@ export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
                     </div>
 
                     <Link href="/" prefetch className="flex items-center space-x-2">
-                        <AppLogo className="text-background" />
+                        <AppLogo className="fill-background" width={70} />
                     </Link>
 
                     <div className="flex items-center justify-end space-x-2">

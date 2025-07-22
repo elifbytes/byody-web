@@ -1,12 +1,10 @@
+import { SVGAttributes } from 'react';
 import AppLogoIcon from './app-logo-icon';
 
-interface AppLogoProps {
-    className?: string;
-}
-export default function AppLogo({ className }: AppLogoProps) {
+export default function AppLogo(props: SVGAttributes<SVGElement>) {
     return (
         <>
-            <AppLogoIcon className={className} />
+            <AppLogoIcon {...props} />
         </>
     );
 }
