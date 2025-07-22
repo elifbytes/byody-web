@@ -52,7 +52,7 @@ function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
     }, [handleCountryChange]);
 
     return (
-        <div className="grid gap-2">
+        <div className="grid gap-2 mx-2">
             <div>
                 <Label>Email</Label>
                 <Input

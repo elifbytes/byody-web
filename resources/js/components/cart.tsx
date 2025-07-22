@@ -61,7 +61,7 @@ function Cart() {
         <Sheet>
             <NotificationBadge label={cart?.lines?.reduce((p, c) => p + c.quantity, 0)} show={(cart?.lines?.length ?? 0) > 0}>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
+                    <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer text-background">
                         <ShoppingCartIcon className="!size-5 opacity-80 group-hover:opacity-100" />
                     </Button>
                 </SheetTrigger>

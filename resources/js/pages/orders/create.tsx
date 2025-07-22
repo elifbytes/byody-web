@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { formatPrice } from '@/lib/price';
 import { Address } from '@/types/address';
@@ -62,40 +63,57 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     const handleSetAddress = (addressId: number) => {
         const selectedAddress = addresses.find((a) => a.id === addressId);
         if (selectedAddress) {
-            put(route('carts.set-address', selectedAddress.id), {
-                onSuccess: () => {
-                    toast.success('Address selected successfully');
+            put(
+                route('carts.set-address', {
+                    addressId: selectedAddress.id,
+                    cart: cart.id,
+                }),
+                {
+                    onSuccess: () => {
+                        toast.success('Address selected successfully');
+                    },
+                    onError: (errors) => {
+                        console.error('Error changing address:', errors);
+                        toast.error('Failed to set address');
+                    },
                 },
-                onError: (errors) => {
-                    console.error('Error changing address:', errors);
-                    toast.error('Failed to set address');
-                },
-            });
+            );
         }
     };
 
     const handleSetShippingOption = (identifier: string) => {
-        put(route('carts.set-shipping-option', identifier), {
-            onSuccess: () => {
-                toast.success('Shipping option selected successfully');
+        put(
+            route('carts.set-shipping-option', {
+                identifier,
+                cart: cart.id,
+            }),
+            {
+                onSuccess: () => {
+                    toast.success('Shipping option selected successfully');
+                },
+                onError: (errors) => {
+                    console.error('Error changing shipping option:', errors);
+                    toast.error('Failed to change shipping option');
+                },
             },
-            onError: (errors) => {
-                console.error('Error changing shipping option:', errors);
-                toast.error('Failed to change shipping option');
-            },
-        });
-    }
+        );
+    };
 
     const handleCreateOrder = () => {
-        post(route('orders.store'), {
-            onSuccess: () => {
-                toast.success('Order created successfully');
+        post(
+            route('orders.store', {
+                cart_id: cart.id,
+            }),
+            {
+                onSuccess: () => {
+                    toast.success('Order created successfully');
+                },
+                onError: (errors) => {
+                    console.error('Error creating order:', errors);
+                    toast.error(errors.cart);
+                },
             },
-            onError: (errors) => {
-                console.error('Error creating order:', errors);
-                toast.error(errors.cart);
-            },
-        });
+        );
     };
 
     return (
@@ -120,7 +138,9 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                 <DialogTitle>Edit Address</DialogTitle>
                                 <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
                             </DialogHeader>
-                            <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                            <ScrollArea className="h-[calc(100vh-200px)]">
+                                <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                            </ScrollArea>
                             <LoadingButton loading={processing} onClick={handleAddAddress}>
                                 Save Address
                             </LoadingButton>
@@ -160,7 +180,9 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                                     <DialogTitle>Edit Address</DialogTitle>
                                                     <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
                                                 </DialogHeader>
-                                                <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                                                <ScrollArea className="h-[calc(100vh-200px)]">
+                                                    <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                                                </ScrollArea>
                                                 <LoadingButton loading={processing} onClick={() => handleUpdateAddress(address.id)}>
                                                     Save Changes
                                                 </LoadingButton>
@@ -173,10 +195,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                     </RadioGroup>
                     <Separator />
                     <Heading title="Shipping Options" description="Select a shipping option for your order" />
-                    <RadioGroup
-                        value={cart?.shipping_option?.identifier || ''}
-                        onValueChange={(handleSetShippingOption)}
-                    >
+                    <RadioGroup value={cart?.shipping_option?.identifier || ''} onValueChange={handleSetShippingOption}>
                         {shippingOptions?.map((option) => (
                             <Card key={option.identifier} className="mb-2">
                                 <CardHeader>

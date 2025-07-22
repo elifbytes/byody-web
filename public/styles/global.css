@@ -1,0 +1,12 @@
+.responsive-logo {
+  height: 48px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .responsive-logo {
+    height: 32px;
+  }
+}
