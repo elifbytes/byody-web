@@ -136,14 +136,16 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
         });
         setSelectedVariant(matchingVariant);
 
-        // find the media that matches the selected variant
-        const matchingMediaIndex = product.media?.findIndex((media) => {
-            return media.id === matchingVariant?.id;
-        });
+        // If the variant has its own images, use the first one
+        if (matchingVariant?.images && matchingVariant.images.length > 0 && carousel) {
+            // Find the index of this image in the product media array
+            const variantImageId = matchingVariant.images[0].id;
+            const matchingMediaIndex = product.media?.findIndex((media) => media.id === variantImageId);
 
-        if (matchingMediaIndex !== undefined && matchingMediaIndex >= 0 && carousel) {
-            carousel.scrollTo(matchingMediaIndex);
-            setCarouselIndex(matchingMediaIndex);
+            if (matchingMediaIndex !== undefined && matchingMediaIndex >= 0) {
+                carousel.scrollTo(matchingMediaIndex);
+                setCarouselIndex(matchingMediaIndex);
+            }
         }
 
         return () => {};
@@ -221,7 +223,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         </Button>
                     </div>
                     <LoadingButton
-                        className="mt-4 w-full rounded"
+                        className="mt-4 w-full rounded border border-gray-300 bg-white text-black hover:bg-gray-50 hover:shadow-lg transition duration-300"
                         disabled={!selectedVariant}
                         loading={processing && processingType === 'addToCart'}
                         onClick={handleAddToCart}
@@ -229,8 +231,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         Add to Cart
                     </LoadingButton>
                     <LoadingButton
-                        className="mt-4 w-full rounded"
-                        variant="destructive"
+                        className="mt-4 w-full rounded bg-[#301D17] text-white hover:bg-[#2b1914] hover:shadow-lg transition duration-300"
                         loading={processing && processingType === 'directCheckout'}
                         disabled={!selectedVariant}
                         onClick={handleDirectCheckout}
