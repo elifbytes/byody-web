@@ -23,15 +23,15 @@ function ProductCard({ product }: ProductCardProps) {
         const variantImages = product.variants?.flatMap((variant) => variant.images || []) || [];
 
         // Debug log to see what images are available
-            // if (product.attribute_data?.name.en?.includes('Chuck 70')) {
-            //     console.log('Chuck 70 Debug:', {
-            //         productName: product.attribute_data?.name.en,
-            //         variantImages: variantImages,
-            //         productMedia: product.media,
-            //         thumbnail: product.thumbnail,
-            //         variants: product.variants,
-            //     });
-            // }
+        // if (product.attribute_data?.name.en?.includes('Chuck 70')) {
+        //     console.log('Chuck 70 Debug:', {
+        //         productName: product.attribute_data?.name.en,
+        //         variantImages: variantImages,
+        //         productMedia: product.media,
+        //         thumbnail: product.thumbnail,
+        //         variants: product.variants,
+        //     });
+        // }
 
         // Use variant images if available, otherwise fall back to product media or thumbnail
         return variantImages.length > 0
@@ -81,39 +81,35 @@ function ProductCard({ product }: ProductCardProps) {
     if (!imagesToShow || imagesToShow.length === 0) {
         return (
             <Link href={product.default_url ? route('products.show', product.default_url.slug) : '#'}>
-                <div className="group transition-colors duration-200 hover:bg-gray-100">
-                    <AspectRatio ratio={4 / 5}>
+                <div className="group transition-colors duration-200">
+                    <AspectRatio ratio={1 / 1}>
                         <div className="flex h-full w-full items-center justify-center rounded-sm bg-gray-200">
                             <span className="text-gray-400">No Image</span>
                         </div>
                     </AspectRatio>
-                    <div className="flex h-28 flex-col justify-between px-3 py-3">
-                        <p className="line-clamp-2 text-base">{product.attribute_data?.name.en}</p>
+                    <div className="flex h-32 flex-col justify-between px-4 py-4">
+                        <p className="line-clamp-2 text-lg font-medium">{product.attribute_data?.name.en}</p>
                         <div className="flex space-x-2">
                             {formattedComparePrice && <p className="text-sm text-gray-500 line-through">{formattedComparePrice}</p>}
-                            <p className="text-base font-medium">{formattedPrice}</p>
+                            <p className="text-lg font-semibold">{formattedPrice}</p>
                         </div>
                     </div>
                 </div>
-                </Link>
+            </Link>
         );
     }
 
     return (
         <Link href={product.default_url ? route('products.show', product.default_url.slug) : '#'}>
-            <div
-                className="group transition-colors duration-200 hover:bg-gray-100"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-            >
+            <div className="group transition-colors duration-200" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
                 <div className="relative">
-                    <AspectRatio ratio={4 / 5}>
+                    <AspectRatio ratio={1/ 1}>
                         {/* Show slideshow only when hovering and has multiple images */}
                         {isHovered && imagesToShow.length > 1 ? (
-                            <Carousel setApi={setCarousel} opts={{ loop: true }}>
-                                <CarouselContent>
+                            <Carousel setApi={setCarousel} opts={{ loop: true }} className="h-full w-full">
+                                <CarouselContent className="h-full">
                                     {imagesToShow.map((image, index) => (
-                                        <CarouselItem key={`${image.id}-${index}`}>
+                                        <CarouselItem key={`${image.id}-${index}`} className="h-full">
                                             <img
                                                 src={image.original_url}
                                                 alt={image.file_name || product.attribute_data?.name.en}
@@ -148,11 +144,11 @@ function ProductCard({ product }: ProductCardProps) {
                     )}
                 </div>
 
-                <div className="flex h-20 flex-col justify-between px-2 py-1">
-                    <p className="line-clamp-2">{product.attribute_data?.name.en}</p>
+                <div className="flex h-32 flex-col justify-between px-4 py-4">
+                    <p className="line-clamp-2 text-lg font-medium">{product.attribute_data?.name.en}</p>
                     <div className="flex space-x-2">
                         {formattedComparePrice && <p className="text-sm text-gray-500 line-through">{formattedComparePrice}</p>}
-                        <p className="text-sm font-medium">{formattedPrice}</p>
+                        <p className="text-lg font-semibold">{formattedPrice}</p>
                     </div>
                 </div>
             </div>
