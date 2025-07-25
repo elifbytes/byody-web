@@ -26,7 +26,7 @@ class ProductController extends Controller
         $searchIds = blank($search) ? [] : Product::search($search)->keys();
 
         $products = QueryBuilder::for(Product::class)
-            ->with(['thumbnail', 'variants.prices', 'defaultUrl'])
+            ->with(['thumbnail', 'variants.prices', 'variants.images', 'media', 'defaultUrl'])
             ->allowedFilters([
                 AllowedFilter::exact('product_types', 'product_type_id'),
                 AllowedFilter::callback('collections', function ($query, $value) {

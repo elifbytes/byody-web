@@ -20,21 +20,34 @@ class HomeController extends Controller
             ->orderBy('order_column')
             ->get();
 
-        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices'])
+        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices', 'variants.images', 'media'])
             ->where('status', 'published')
             ->orderBy('products.created_at', 'desc')
             ->take(10)
             ->get();
 
-        $bestSellers = Product::query()
-            ->with(['thumbnail', 'defaultUrl', 'variants.prices'])
+        $bestSellerIds = DB::table('products')
             ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
             ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
-            ->select('products.*')
+            ->select('products.id')
             ->where('products.status', 'published')
-            ->whereType('physical')
+            ->where('product_variants.shippable', true)
+            ->whereNull('products.deleted_at')
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
+            ->take(10)
+            ->pluck('id');
+
+        $bestSellers = collect();
+        if ($bestSellerIds->isNotEmpty()) {
+            $bestSellers = Product::query()
+                ->with(['thumbnail', 'defaultUrl', 'variants.prices', 'variants.images', 'media'])
+                ->whereIn('id', $bestSellerIds)
+                ->orderByRaw('FIELD(id, ' . $bestSellerIds->implode(',') . ')')
+                ->get();
+        }
+
+        $collections = Collection::with(['thumbnail', 'defaultUrl'])
             ->take(10)
             ->get();
 
@@ -42,6 +55,7 @@ class HomeController extends Controller
             'banners' => $banners,
             'newArrivals' => $newArrivals,
             'bestSellers' => $bestSellers,
+            'collections' => $collections,
         ]);
     }
 }

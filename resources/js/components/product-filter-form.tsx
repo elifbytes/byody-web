@@ -61,13 +61,13 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
 
     return (
         <>
-            <Button variant="outline" className="mb-4 flex w-full justify-start" onClick={() => setOpenSearch(true)}>
+            <Button variant="outline" className="mb-4 flex w-full justify-start text-[12px]" onClick={() => setOpenSearch(true)}>
                 <SearchIcon className="h-4 w-4" />
                 Search
             </Button>
             <SearchDialog open={openSearch} onOpenChange={setOpenSearch} urlParams={urlParams} />
             <div>
-                <h2 className="text-lg font-semibold">Product Types</h2>
+                <h2 className="text-[12px] font-semibold">Product Types</h2>
                 <ul className="mt-2 space-y-2">
                     {productTypes.map((type) => (
                         <div className="flex items-center gap-3" key={type.id}>
@@ -86,13 +86,15 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
                                     ])
                                 }
                             />
-                            <Label htmlFor={`type-${type.id}`}>{type.name}</Label>
+                            <Label htmlFor={`type-${type.id}`} className="text-[12px]">
+                                {type.name}
+                            </Label>
                         </div>
                     ))}
                 </ul>
             </div>
             <div className="mt-6">
-                <h2 className="text-lg font-semibold">Collections</h2>
+                <h2 className="text-[14px] font-semibold">Collections</h2>
                 <ul className="mt-2 space-y-2">
                     {flatCollections.map((collection) => (
                         <div className="flex items-center gap-3" key={collection.id}>
@@ -111,29 +113,35 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
                                     ])
                                 }
                             />
-                            <Label htmlFor={collection.default_url?.slug}>{collection.attribute_data?.name.en}</Label>
+                            <Label htmlFor={collection.default_url?.slug} className="text-[12px]">
+                                {collection.attribute_data?.name.en}
+                            </Label>
                         </div>
                     ))}
                 </ul>
             </div>
             <div>
-                <h2 className="mt-6 mb-2 text-lg font-semibold">Availability</h2>
+                <h2 className="mt-6 mb-2 text-[14px] font-semibold">Availability</h2>
                 <RadioGroup
                     defaultValue={filters?.availability || 'all'}
                     onValueChange={(value) => handleFilterChange([{ filter: 'availability', value }])}
                 >
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="all" id="all" />
-                        <Label htmlFor="all">All</Label>
+                        <Label htmlFor="all" className="text-[12px]">
+                            All
+                        </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="in-stock" id="in-stock" />
-                        <Label htmlFor="in-stock">In Stock</Label>
+                        <Label htmlFor="in-stock" className="text-[12px]">
+                            In Stock
+                        </Label>
                     </div>
                 </RadioGroup>
             </div>
             <div className="mt-6">
-                <h2 className="mb-2 text-lg font-semibold">Price Range</h2>
+                <h2 className="mb-2 text-[12px] font-semibold">Price Range</h2>
                 <Slider
                     defaultValue={priceSliderValue}
                     min={0}
@@ -149,22 +157,22 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
                 />
                 <div className="mt-2 flex items-center justify-between space-x-4">
                     <div className="flex items-center space-x-1">
-                        <Label className="text-xs">Min</Label>
+                        <Label className="text-[12px]">Min</Label>
                         <Input
                             type="number"
                             value={priceSliderValue[0]}
                             onChange={(e) => handleFilterChange([{ filter: 'min_price', value: e.target.value }])}
-                            className="w-24"
+                            className="w-24 text-[14px]"
                             placeholder="Min Price"
                         />
                     </div>
                     <div className="flex items-center space-x-1">
-                        <Label className="text-xs">Max</Label>
+                        <Label className="text-[12px]">Max</Label>
                         <Input
                             type="number"
                             value={priceSliderValue[1]}
                             onChange={(e) => handleFilterChange([{ filter: 'max_price', value: e.target.value }])}
-                            className="w-24"
+                            className="w-24 text-[14px]"
                             placeholder="Max Price"
                         />
                     </div>
