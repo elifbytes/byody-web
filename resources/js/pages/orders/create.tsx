@@ -2,10 +2,12 @@ import AddressForm from '@/components/address-form';
 import AppLogo from '@/components/app-logo';
 import CartLineCard from '@/components/cart-line-card';
 import Heading from '@/components/heading';
+import InputError from '@/components/input-error';
 import LoadingButton from '@/components/loading-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -16,7 +18,7 @@ import { Country } from '@/types/country';
 import { ShippingOption } from '@/types/shipping';
 import { useForm } from '@inertiajs/react';
 import parse from 'html-react-parser';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Ticket } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -24,13 +26,22 @@ interface CreateOrderPageProps {
     addresses: Address[];
     countries: Country[];
     cart: Cart;
-    shippingOptions?: ShippingOption[]; // Adjust type as needed
+    shippingOptions?: ShippingOption[];
 }
 function CreateOrderPage({ addresses, countries, cart, shippingOptions }: CreateOrderPageProps) {
     const [openAddAddressModal, setOpenAddAddressModal] = useState<boolean>(false);
     const [openEditAddressModal, setOpenEditAddressModal] = useState<boolean>(false);
+    const [openVoucherModal, setOpenVoucherModal] = useState<boolean>(false);
 
     const { data, setData, post, put, reset, processing, errors } = useForm<Omit<Address, 'id'>>();
+    const {
+        data: voucherData,
+        setData: setVoucherData,
+        post: postVoucher,
+        reset: resetVoucher,
+        processing: processingVoucher,
+        errors: errorsVoucher,
+    } = useForm<{ code: string }>({ code: '' });
 
     const handleAddAddress = () => {
         post(route('address.store'), {
@@ -73,8 +84,12 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                         toast.success('Address selected successfully');
                     },
                     onError: (errors) => {
-                        console.error('Error changing address:', errors);
-                        toast.error('Failed to set address');
+                        console.error('Error setting address:', errors);
+                        if (errors.address) {
+                            toast.error(errors.address);
+                        } else {
+                            toast.error('Failed to set address');
+                        }
                     },
                 },
             );
@@ -92,11 +107,32 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                     toast.success('Shipping option selected successfully');
                 },
                 onError: (errors) => {
-                    console.error('Error changing shipping option:', errors);
-                    toast.error('Failed to change shipping option');
+                    if (errors.shipping) {
+                        toast.error(errors.shipping);
+                    } else {
+                        toast.error('Failed to change shipping option');
+                    }
                 },
             },
         );
+    };
+
+    const handleApplyVoucher = () => {
+        if (!voucherData.code || voucherData.code.trim() === '') {
+            toast.error('Please enter a voucher code');
+            return;
+        }
+        postVoucher(route('carts.apply-voucher'), {
+            onSuccess: () => {
+                toast.success('Voucher applied successfully');
+                resetVoucher(); // Clear the voucher code input
+                setOpenVoucherModal(false); // Close the voucher modal
+            },
+            onError: (errors) => {
+                console.error('Error applying voucher:', errors);
+                toast.error('Failed to apply voucher');
+            },
+        });
     };
 
     const handleCreateOrder = () => {
@@ -117,13 +153,13 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     };
 
     return (
-        <div>
+        <div className="min-h-screen">
             <div className="grid h-20 grid-cols-[auto_1fr_auto] place-items-center border-b px-4">
                 <Button variant="ghost" onClick={() => window.history.back()}>
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center justify-center">
-                    <AppLogo />
+                    <AppLogo width={70} />
                 </div>
             </div>
             <div className="container mx-auto grid gap-10 p-4 md:grid-cols-[3fr_2fr]">
@@ -214,7 +250,58 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                 </div>
                 <div>
                     <Card>
-                        <CardHeader>{cart?.lines?.map((line) => <CartLineCard key={line.id} line={line} />)}</CardHeader>
+                        <CardHeader>
+                            {cart?.lines?.map((line) => <CartLineCard key={line.id} line={line} />)}
+                            <Dialog open={openVoucherModal} onOpenChange={setOpenVoucherModal}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="mt-4 w-full">
+                                        <div className="flex items-center gap-2">
+                                            <Ticket className="h-4 w-4" />
+                                            Voucher
+                                        </div>
+                                        <ChevronRight className="ml-auto h-4 w-4" />
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Apply Voucher</DialogTitle>
+                                        <DialogDescription>
+                                            Enter your voucher code below to apply it to your order. If you have a valid voucher, it will be applied
+                                            to your cart.
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    <Input
+                                        type="text"
+                                        value={voucherData.code}
+                                        onChange={(e) => setVoucherData({ code: e.target.value.toUpperCase() })}
+                                        placeholder="Enter voucher code"
+                                    />
+                                    <InputError message={errorsVoucher.code} />
+                                    <DialogFooter>
+                                        <LoadingButton
+                                            disabled={!voucherData.code}
+                                            loading={processingVoucher}
+                                            className="mt-4 w-full"
+                                            onClick={handleApplyVoucher}
+                                        >
+                                            Apply Voucher
+                                        </LoadingButton>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                            {(cart.calculation?.discountBreakdown?.length || 0) > 0 && (
+                                <div className="mt-2 text-xs text-muted-foreground">
+                                    <span className="font-medium">Applied Discounts:</span>
+                                    <ul className="list-disc pl-4">
+                                        {cart.calculation?.discountBreakdown?.map((item, index) => (
+                                            <li key={index}>
+                                                {item.discount.name}: {formatPrice(item.price)}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </CardHeader>
                         <Separator />
                         <CardContent>
                             <div>

@@ -75,4 +75,8 @@ export type CartCalculation = {
     unitPrice?: CastedPrice;
     unitPriceInclTax?: CastedPrice;
     shippingTotal?: CastedPrice;
+    discountBreakdown?: {
+        discount: Discount;
+        price: CastedPrice;
+    }[];
 };

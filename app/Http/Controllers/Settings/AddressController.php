@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Lunar\Models\Address;
 use Lunar\Models\Country;
 
@@ -57,9 +56,7 @@ class AddressController extends Controller
 
         $customer = $request->user()->customers()->latest()->first();
         if (!$customer) {
-            throw ValidationException::withMessages([
-                'line_one' => 'Customer profile not found.',
-            ]);
+            return redirect()->back()->withErrors(['customer' => 'Customer profile not found.']);
         }
         // Check if the customer already has a default shipping address
         $existingShippingDefault = $customer->addresses()->where('shipping_default', true)->exists();

@@ -25,6 +25,7 @@ Route::middleware([
 
     Route::put('carts/set-address/{addressId}/{cart?}', [CartController::class, 'setAddress'])->name('carts.set-address');
     Route::put('carts/set-shipping-option/{identifier}/{cart?}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
+    Route::post('carts/apply-voucher', [CartController::class, 'applyVoucher'])->name('carts.apply-voucher');
 
     Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
 });

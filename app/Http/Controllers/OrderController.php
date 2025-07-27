@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\ShippingManifest;
@@ -45,6 +44,7 @@ class OrderController extends Controller
             'taxTotal' => $cart->taxTotal,
             'discountTotal' => $cart->discountTotal,
             'shippingTotal' => $cart->shippingTotal,
+            'discountBreakdown' => $cart->discountBreakdown,
         ];
         $cart->shippingAddress;
         $cart->shipping_option = $cart->getShippingOption();
@@ -187,7 +187,7 @@ class OrderController extends Controller
             $cart->add($productVariant, $data['quantity']);
         } catch (\Lunar\Exceptions\Carts\CartException $e) {
             $error = $e->getMessage();
-            throw ValidationException::withMessages(['order' => $error]);
+            return redirect()->back()->withErrors(['order' => $error]);
         }
 
         return redirect()->route('orders.create', $cart->id);

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Lunar\Facades\CartSession;
+use Lunar\Facades\Discounts;
 use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\ProductVariant;
@@ -101,7 +101,7 @@ class CartController extends Controller
         $customer = $user->customers()->latest()->first();
         $address = $customer->addresses()->findOrFail($addressId);
         if (!$address) {
-            throw new ValidationException('Address not found.');
+            return redirect()->back()->withErrors(['address' => 'Address not found.']);
         }
         $address['meta'] = [
             'address_id' => $address->id,
@@ -124,10 +124,39 @@ class CartController extends Controller
         /** @var \Lunar\DataTypes\ShippingOption|null */
         $shippingOption = collect($shippingOptions)->firstWhere('identifier', $identifier);
         if (!$shippingOption) {
-            throw new ValidationException('Shipping option not found.');
+            return redirect()->back()->withErrors(['shipping' => 'Shipping option not found.']);
         }
         $cart->setShippingOption($shippingOption);
 
         return redirect()->back()->with('success', 'Shipping option set successfully.');
+    }
+
+    /**
+     * Apply a discount code to the cart.
+     */
+    public function applyVoucher(Request $request)
+    {
+        $data = $request->validate([
+            'code' => 'required|string|max:255',
+            'cart' => 'nullable|exists:carts,id',
+        ]);
+
+        $cart = $request->cart ? Cart::find($data['cart']) : CartSession::current();
+
+        if (!$cart) {
+            return redirect()->back()->withErrors(['cart' => 'Cart not found.']);
+        }
+
+        $isCouponValid = Discounts::validateCoupon($data['code']);
+        if (!$isCouponValid) {
+            return redirect()->back()->withErrors(['code' => 'Invalid voucher code.']);
+        }
+
+        $cart->coupon_code = $data['code'];
+        $cart->save();
+
+        Discounts::resetDiscounts();
+
+        return redirect()->back()->with('success', 'Voucher applied successfully.');
     }
 }
