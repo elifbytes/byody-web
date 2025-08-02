@@ -48,6 +48,8 @@ export interface User {
 
 export type Language = Record<string, string>;
 
+export type Link = { url: string | null; label: string; active: boolean };
+
 export type Paginated<T> = {
     data: T[];
     current_page: number;
@@ -58,11 +60,7 @@ export type Paginated<T> = {
     total: number;
     prev_page_url: string | null;
     next_page_url: string | null;
-    links: {
-        url: string | null;
-        label: string;
-        active: boolean;
-    }[];
+    links: Link[];
     path: string;
     first_page_url: string;
     last_page_url: string;

@@ -5,8 +5,7 @@ namespace App\Providers;
 use App\Filament\Resources\BannerResource;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
-use Lunar\Models\Price;
-use Lunar\Models\Product;
+use Lunar\Facades\Payments;
 use Lunar\Shipping\ShippingPlugin;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +15,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        Payments::extend('xendit', function () {
+            return new \App\PaymentTypes\XenditPayment();
+        });
         LunarPanel::panel(
             fn($panel) =>
             $panel

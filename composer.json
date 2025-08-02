@@ -21,7 +21,9 @@
         "lunarphp/table-rate-shipping": "^1.0@beta",
         "spatie/laravel-google-cloud-storage": "^2.3",
         "spatie/laravel-query-builder": "^6.3",
-        "tightenco/ziggy": "^2.4"
+        "tightenco/ziggy": "^2.4",
+        "worksome/exchange": "^2.2",
+        "xendit/xendit-php": "^7.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

@@ -2,27 +2,30 @@ import { User } from '.';
 import { Cart } from './cart';
 import { Channel } from './channel';
 import { Currency } from './currency';
+import { CastedPrice } from './price';
 import { Transaction } from './transaction';
+
+export type OrderStatus = 'awaiting-payment' | 'payment-received' | 'payment-offline' | 'dispatched';
 
 export type Order = {
     id: number;
     user_id?: number;
     channel_id: number;
-    status: string;
-    refference?: string;
+    status: OrderStatus;
+    reference?: string;
     customer_refference?: string;
     sub_total: number;
     discount_total: number;
     shipping_total: number;
     tax_breakdown: string;
     tax_total: number;
-    total: number;
+    total: CastedPrice;
     notes?: string;
     currency_code: string;
     compare_currency_code?: string;
     exchange_rate: number;
     placed_at?: string;
-    meta?: string;
+    meta?: Record<string, string>;
     customer_id?: number;
     new_customer: boolean;
     discount_breakdown?: string;

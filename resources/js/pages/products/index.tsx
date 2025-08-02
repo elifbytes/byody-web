@@ -1,3 +1,4 @@
+import PaginationButton from '@/components/pagination-button';
 import ProductCard from '@/components/product-card';
 import ProductFilterForm from '@/components/product-filter-form';
 import { Button } from '@/components/ui/button';
@@ -22,18 +23,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from '@/components/ui/pagination';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
-import { getPaginationItems } from '@/lib/utils';
 import { Paginated, UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
 import { Product, ProductType } from '@/types/product';
@@ -49,11 +40,6 @@ interface ProductPageProps {
     sort?: string;
 }
 export default function ProductPage({ productTypes, products, collections, filters, sort }: ProductPageProps) {
-    const currentPage = products.current_page;
-    const lastPage = products.last_page;
-    const perPage = products.per_page;
-    const paginations = getPaginationItems(currentPage, lastPage, perPage);
-
     const urlParams: UrlParams = {
         filter: filters || {},
         sort: sort || '',
@@ -126,39 +112,7 @@ export default function ProductPage({ productTypes, products, collections, filte
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
-                    <Pagination className="mt-10 flex items-center justify-end px-3">
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    href={products.prev_page_url || '#'}
-                                    aria-disabled={currentPage <= 1}
-                                    tabIndex={currentPage <= 1 ? -1 : undefined}
-                                    className={currentPage <= 1 ? 'pointer-events-none opacity-50' : undefined}
-                                />
-                            </PaginationItem>
-                            {paginations.map((pageNumber) =>
-                                Number.isNaN(pageNumber) ? (
-                                    <PaginationItem key={pageNumber}>
-                                        <PaginationEllipsis />
-                                    </PaginationItem>
-                                ) : (
-                                    <PaginationItem key={pageNumber}>
-                                        <PaginationLink href={products.links[pageNumber].url || '#'} isActive={pageNumber === products.current_page}>
-                                            {pageNumber}
-                                        </PaginationLink>
-                                    </PaginationItem>
-                                ),
-                            )}
-                            <PaginationItem>
-                                <PaginationNext
-                                    href={products.next_page_url || '#'}
-                                    aria-disabled={currentPage >= lastPage}
-                                    tabIndex={currentPage >= lastPage ? -1 : undefined}
-                                    className={currentPage >= lastPage ? 'pointer-events-none opacity-50' : undefined}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </Pagination>
+                    <PaginationButton data={products} />
                 </div>
             </div>
         </AppLayout>

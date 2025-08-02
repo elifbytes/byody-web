@@ -28,7 +28,7 @@ class XenditPayment extends AbstractPayment
             success: true,
             message: 'The payment was successful',
             orderId: $this->order->id,
-            paymentType: 'custom-type'
+            paymentType: 'xendit',
         );
 
         PaymentAttemptEvent::dispatch($response);
