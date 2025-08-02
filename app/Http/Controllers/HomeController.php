@@ -20,7 +20,13 @@ class HomeController extends Controller
             ->orderBy('order_column')
             ->get();
 
-        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices'])
+        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices', 'variants.images', 'media'])
+            ->where('status', 'published')
+            ->orderBy('products.created_at', 'desc')
+            ->take(10)
+            ->get();
+
+        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices', 'variants.images', 'media'])
             ->where('status', 'published')
             ->orderBy('products.created_at', 'desc')
             ->take(10)
@@ -33,8 +39,10 @@ class HomeController extends Controller
             ->select('products.*')
             ->where('products.status', 'published')
             ->whereType('physical')
+
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
+            
             ->take(10)
             ->get();
 
@@ -42,6 +50,7 @@ class HomeController extends Controller
             'banners' => $banners,
             'newArrivals' => $newArrivals,
             'bestSellers' => $bestSellers,
+            
         ]);
     }
 }

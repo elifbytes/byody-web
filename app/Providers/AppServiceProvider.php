@@ -16,6 +16,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        Payments::extend('xendit', function () {
+            return new \App\PaymentTypes\XenditPayment();
+        });
+        
         LunarPanel::panel(
             fn($panel) =>
             $panel
