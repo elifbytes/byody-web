@@ -5,8 +5,8 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Toggle } from '@/components/ui/toggle';
+import { usePrice } from '@/hooks/use-price';
 import AppLayout from '@/layouts/app-layout';
-import { formatPrice } from '@/lib/price';
 import { Product, ProductOption, ProductOptionValue, ProductVariant } from '@/types/product';
 import { useForm } from '@inertiajs/react';
 import parse from 'html-react-parser';
@@ -29,6 +29,8 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
     const [quantity, setQuantity] = useState<number>(1);
     const [processingType, setProcessingType] = useState<'addToCart' | 'directCheckout'>();
+
+    const { formatPrice } = usePrice();
 
     const { post, processing, errors, transform } = useForm({
         product_variant_id: selectedVariant?.id,

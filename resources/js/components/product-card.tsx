@@ -1,4 +1,4 @@
-import { formatPrice } from '@/lib/price';
+import { usePrice } from '@/hooks/use-price';
 import { Product } from '@/types/product';
 import { Link } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,6 +11,7 @@ interface ProductCardProps {
 function ProductCard({ product }: ProductCardProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
+    const { formatPrice } = usePrice();
 
     const formattedPrice = formatPrice(product.variants?.[0].prices?.[0].price);
     const formattedComparePrice =
@@ -87,7 +88,7 @@ function ProductCard({ product }: ProductCardProps) {
                             <div className="h-full w-full">
                                 {/* Show only the current slide */}
                                 {imagesToShow.map((image, index) => (
-                                    <div 
+                                    <div
                                         key={`${image.id}-${index}`}
                                         className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${
                                             index === currentSlide ? 'opacity-100' : 'opacity-0'
@@ -121,7 +122,7 @@ function ProductCard({ product }: ProductCardProps) {
                                         index === currentSlide ? 'bg-white' : 'bg-white/50'
                                     }`}
                                     onClick={(e) => {
-                                        e.preventDefault(); 
+                                        e.preventDefault();
                                         setCurrentSlide(index);
                                     }}
                                 />
@@ -133,7 +134,7 @@ function ProductCard({ product }: ProductCardProps) {
                 <div className="flex h-32 flex-col justify-between px-4 py-4">
                     <p className="line-clamp-2 text-lg font-medium">{product.attribute_data?.name.en}</p>
                     <div className="flex space-x-2">
-                        {formattedComparePrice && <p className="text-sm text-gray-500 line-through">{formattedComparePrice}</p>}    
+                        {formattedComparePrice && <p className="text-sm text-gray-500 line-through">{formattedComparePrice}</p>}
                         <p className="text-lg font-semibold">{formattedPrice}</p>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-import { getProductVariantPrice } from '@/lib/price';
+import { usePrice } from '@/hooks/use-price';
 import { CartLine } from '@/types/cart';
 import { Badge } from './ui/badge';
 
@@ -7,6 +7,7 @@ interface CartLineCardProps {
 }
 
 function CartLineCard({ line }: CartLineCardProps) {
+    const { getProductVariantPrice } = usePrice();
     return (
         <div className="grid grid-cols-[1fr_3fr] gap-2">
             <div>

@@ -2,43 +2,41 @@ import { CartLine } from '@/types/cart';
 import { CastedPrice } from '@/types/price';
 import { ProductVariant } from '@/types/product';
 
-const currency = import.meta.env.VITE_APP_CURRENCY || 'USD';
-
-export function formatPrice(price?: CastedPrice) {
+export function formatPrice(price?: CastedPrice, exchangeRate?: number): string {
     if (!price || !price.currency) {
         return '-';
     }
-    const currency = price.currency?.code || 'USD';
-    const decimalPlaces = price.value / Math.pow(10, price.currency.decimal_places || 0);
+
+    const value = price.value * (exchangeRate || 1);
 
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency,
+        currency: 'USD',
         notation: 'standard',
-        maximumFractionDigits: 2,
-    }).format(decimalPlaces);
+        maximumFractionDigits: 0,
+    }).format(value);
 }
 
-export const getProductVariantPrice = (productVariant?: ProductVariant): string => {
+export const getProductVariantPrice = (productVariant?: ProductVariant, exchangeRate?: number): string => {
     if (!productVariant) return '-';
     if (!productVariant.prices || productVariant.prices.length === 0) {
         return '-';
     }
 
-    const price = productVariant.prices.find((p) => p.price.currency?.code === String(currency));
+    const price = productVariant.prices.find((p) => p.price.currency?.code === 'IDR');
 
     if (price) {
-        return formatPrice(price.price);
+        return formatPrice(price.price, exchangeRate);
     }
 
     return '-';
 };
 
-export const getCartLinesPrice = (lines: CartLine[]): string => {
+export const getCartLinesPrice = (lines: CartLine[], exchangeRate?: number): string => {
     if (!lines || lines.length === 0) return '-';
 
     const total = lines.reduce((sum, line) => {
-        const value = line.purchasable?.prices?.find((p) => p.price.currency?.code === currency)?.price?.value || 0;
+        const value = line.purchasable?.prices?.find((p) => p.price.currency?.code === 'IDR')?.price?.value || 0;
         const quantity = line.quantity || 1;
         return sum + value * quantity;
     }, 0);
@@ -51,5 +49,5 @@ export const getCartLinesPrice = (lines: CartLine[]): string => {
         currency: firstCurrency,
     };
 
-    return formatPrice(price);
+    return formatPrice(price, exchangeRate);
 };

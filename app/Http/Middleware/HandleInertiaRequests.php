@@ -11,6 +11,7 @@ use Lunar\Models\Collection;
 use Lunar\Models\CollectionGroup;
 use Lunar\Models\Contracts\Cart;
 use Tighten\Ziggy\Ziggy;
+use Worksome\Exchange\Facades\Exchange;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -47,6 +48,10 @@ class HandleInertiaRequests extends Middleware
         $collections = Collection::with(['thumbnail', 'defaultUrl'])->orderBy('_lft')->get()->toTree();
         $cart = CartSession::current(calculate: false);
 
+        $exchangeRates = Exchange::rates('IDR', ['USD']);
+        $rates = $exchangeRates->getRates();
+        $rate = $rates['USD'];
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -61,6 +66,7 @@ class HandleInertiaRequests extends Middleware
             'collections' => $collections,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'false',
             'cart' => $cart,
+            'exchangeRate' => $rate,
         ];
     }
 }

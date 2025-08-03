@@ -1,5 +1,5 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { getCartLinesPrice } from '@/lib/price';
+import { usePrice } from '@/hooks/use-price';
 import { SharedData } from '@/types';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Minus, Plus, ShoppingCartIcon, Trash } from 'lucide-react';
@@ -11,8 +11,9 @@ import { NotificationBadge } from './ui/notification-badge';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 function Cart() {
+    const { getCartLinesPrice } = usePrice();
     const { cart } = usePage<SharedData>().props;
-    
+
     const {
         put,
         delete: destroy,

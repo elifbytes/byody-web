@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { usePrice } from '@/hooks/use-price';
 import AppLayout from '@/layouts/app-layout';
-import { formatPrice } from '@/lib/price';
 import { formatDate } from '@/lib/utils';
 import { Order, OrderStatus } from '@/types/order';
 import { Head, router } from '@inertiajs/react';
@@ -16,6 +16,7 @@ interface OrderPageProps {
     orders: Order[];
 }
 function OrderPage({ orders }: OrderPageProps) {
+    const { formatPrice } = usePrice();
     const renderStatus = (status: OrderStatus) => {
         switch (status) {
             case 'awaiting-payment':

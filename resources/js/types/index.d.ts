@@ -32,6 +32,7 @@ export interface SharedData {
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     collections: Collection[];
+    exchangeRate?: number;
     [key: string]: unknown;
 }
 

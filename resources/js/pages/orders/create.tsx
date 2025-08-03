@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { formatPrice } from '@/lib/price';
+import { usePrice } from '@/hooks/use-price';
 import { Address } from '@/types/address';
 import { Cart } from '@/types/cart';
 import { Country } from '@/types/country';
@@ -32,6 +32,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
     const [openAddAddressModal, setOpenAddAddressModal] = useState<boolean>(false);
     const [openEditAddressModal, setOpenEditAddressModal] = useState<boolean>(false);
     const [openVoucherModal, setOpenVoucherModal] = useState<boolean>(false);
+    const { formatPrice } = usePrice();
 
     const { data, setData, post, put, reset, processing, errors } = useForm<Omit<Address, 'id'>>();
     const {
