@@ -24,6 +24,7 @@ class User extends Authenticatable implements LunarUserInterface
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'workos_id',
         'avatar',
     ];

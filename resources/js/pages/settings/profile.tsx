@@ -19,10 +19,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type ProfileForm = {
+interface ProfileForm {
     name: string;
     email: string;
-};
+    phone: string;
+}
 
 export default function Profile() {
     const { auth } = usePage<SharedData>().props;
@@ -30,6 +31,7 @@ export default function Profile() {
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
         name: auth.user.name,
         email: auth.user.email,
+        phone: auth.user.phone || '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -46,12 +48,11 @@ export default function Profile() {
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Profile information" description="Update your name and email address" />
+                    <HeadingSmall title="Profile information" description="Update your name, email address, and phone number" />
 
                     <form onSubmit={submit} className="space-y-6">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Name</Label>
-
                             <Input
                                 id="name"
                                 className="mt-1 block w-full"
@@ -59,25 +60,36 @@ export default function Profile() {
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
                                 autoComplete="name"
-                                placeholder="Full name"
                             />
-
                             <InputError className="mt-2" message={errors.name} />
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="email">Email address</Label>
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                                id="phone"
+                                type="tel"
+                                className="mt-1 block w-full"
+                                value={data.phone}
+                                onChange={(e) => setData('phone', e.target.value)}
+                                autoComplete="tel"
+                                placeholder="+62 812 3456 7890"
+                            />
+                            <InputError className="mt-2" message={errors.phone} />
+                        </div>
 
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 className="mt-1 block w-full"
                                 value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
                                 required
                                 autoComplete="username"
                                 disabled
                             />
-
                             <InputError className="mt-2" message={errors.email} />
                         </div>
 

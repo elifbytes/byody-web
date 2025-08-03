@@ -34,5 +34,14 @@ Route::get('/about', function () {
     return Inertia::render('about');
 });
 
+// Tambahkan route untuk FAQ dan Terms of Service
+Route::get('/faqs', function () {
+    return Inertia::render('faqs');
+})->name('faqs');
+
+Route::get('/terms-of-service', function () {
+    return Inertia::render('terms-of-service');
+})->name('terms-of-service');
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

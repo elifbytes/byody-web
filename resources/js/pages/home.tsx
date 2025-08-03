@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import AppFooter from '@/components/app-footer';
 import { AppHeader } from '@/components/app-header';
 import CollectionsCarousel from '@/components/collections-carousel';
+import { LoginRegisterPopup } from '@/components/login-register-popup';
 import ProductsCarousel from '@/components/products-carousel';
 import ReviewsCarousel from '@/components/reviews-carousel';
 import { Banner } from '@/types/banner';
@@ -49,6 +50,9 @@ export default function Home({ collections, newArrivals, bestSellers }: HomeProp
                 <div className="mb-4" />
             </AppContent>
             <AppFooter />
+            
+            {/* Login/Register Popup - hanya muncul di halaman home */}
+            <LoginRegisterPopup />
         </>
     );
 }
