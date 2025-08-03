@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { type SharedData } from '@/types';
+import { SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
 import { LogIn, UserPlus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export function LoginRegisterPopup() {
-    const { auth, ziggy } = usePage<SharedData>().props;
+    const { auth } = usePage<SharedData>().props;
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
@@ -17,7 +17,7 @@ export function LoginRegisterPopup() {
         if (!auth.user) {
             const currentUrl = window.location.pathname;
             const isHomePage = currentUrl === '/' || currentUrl === '/home';
-            
+
             if (isHomePage) {
                 const hasSeenPopup = localStorage.getItem('hasSeenLoginPopup');
                 if (!hasSeenPopup) {
@@ -25,7 +25,7 @@ export function LoginRegisterPopup() {
                     const timer = setTimeout(() => {
                         setIsOpen(true);
                     }, 1000);
-                    
+
                     return () => clearTimeout(timer);
                 }
             }
@@ -52,23 +52,23 @@ export function LoginRegisterPopup() {
                         Bergabunglah dengan kami untuk mendapatkan pengalaman berbelanja yang lebih baik dan penawaran eksklusif.
                     </DialogDescription>
                 </DialogHeader>
-                
+
                 <div className="space-y-4 py-4">
-                    <Button asChild className="w-full h-12" size="lg">
+                    <Button asChild className="h-12 w-full" size="lg">
                         <Link href="/login" className="flex items-center gap-2">
                             <LogIn className="h-4 w-4" />
                             Masuk ke Akun Saya
                         </Link>
                     </Button>
-                    
-                    <Button asChild variant="outline" className="w-full h-12" size="lg">
+
+                    <Button asChild variant="outline" className="h-12 w-full" size="lg">
                         <Link href="/login" className="flex items-center gap-2">
                             <UserPlus className="h-4 w-4" />
                             Daftar Akun Baru
                         </Link>
                     </Button>
                 </div>
-                
+
                 <div className="text-center">
                     <Button variant="ghost" onClick={handleClose} className="text-sm text-muted-foreground hover:text-foreground">
                         Lewati untuk sekarang
