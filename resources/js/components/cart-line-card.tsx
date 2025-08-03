@@ -7,15 +7,20 @@ interface CartLineCardProps {
 }
 
 function CartLineCard({ line }: CartLineCardProps) {
+    const variantImage = line.purchasable?.images && line.purchasable.images.length > 0 ? line.purchasable.images[0].original_url : null;
+
+    const productMedia =
+        line.purchasable?.product?.media && line.purchasable.product.media.length > 0 ? line.purchasable.product.media[0].original_url : null;
+
+    const thumbnailImage = line.purchasable?.product?.thumbnail?.original_url;
+    
+    const imageUrl = variantImage || productMedia || thumbnailImage;
+
     return (
         <div className="grid grid-cols-[1fr_3fr] gap-2">
             <div>
-                {line.purchasable?.product?.thumbnail && (
-                    <img
-                        className="rounded"
-                        src={line.purchasable?.product?.thumbnail.original_url}
-                        alt={line.purchasable?.product?.attribute_data?.name.en}
-                    />
+                {imageUrl && (
+                    <img className="h-full w-full rounded object-cover" src={imageUrl} alt={line.purchasable?.product?.attribute_data?.name.en} />
                 )}
             </div>
             <div className="flex flex-col justify-center space-y-2">
