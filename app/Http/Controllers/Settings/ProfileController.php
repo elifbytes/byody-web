@@ -32,9 +32,13 @@ class ProfileController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
         ]);
 
-        $request->user()->update(['name' => $request->name]);
+        $request->user()->update([
+            'name' => $request->name,
+            'phone' => $request->phone,
+        ]);
 
         return to_route('profile.edit');
     }
