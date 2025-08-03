@@ -23,6 +23,12 @@ class PaymentController extends Controller
         $payment_method = $data['payment_method'];
 
         $order = Order::where('reference', $external_id)->first();
+
+        if (!$order) {
+            return response()->json([
+                'message' => 'Order not found',
+            ], 404);
+        }
         if ($status === 'PAID') {
             $order->status = 'payment-received';
         }
