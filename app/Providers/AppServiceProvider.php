@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
+use App\Filament\Pages\Dashboard; // Updated import
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Facades\Payments;
@@ -18,6 +19,7 @@ class AppServiceProvider extends ServiceProvider
         Payments::extend('xendit', function () {
             return new \App\PaymentTypes\XenditPayment();
         });
+        
         LunarPanel::panel(
             fn($panel) =>
             $panel
@@ -27,7 +29,12 @@ class AppServiceProvider extends ServiceProvider
                 ])
                 ->resources([
                     BannerResource::class,
-                ])->navigationGroups([
+                ])
+                // Tambahkan dashboard custom melalui method pages()
+                ->pages([
+                    Dashboard::class, // Register custom dashboard here
+                ])
+                ->navigationGroups([
                     'Content',
                     'Catalog',
                     'Sales',
@@ -41,7 +48,6 @@ class AppServiceProvider extends ServiceProvider
                     'warning' => '#f5f5f5',
                     'info' => '#f5f5f5',
                 ])
-
         )->register();
     }
 
