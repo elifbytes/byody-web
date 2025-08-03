@@ -87,13 +87,13 @@ class OrderController extends Controller
                 // set placed_at timestamp
                 $order->placed_at = now();
 
-                $exchangeRates = Exchange::rates('USD', ['IDR']);
-                $rates = $exchangeRates->getRates();
-                $rate = $rates['IDR'];
-                if (!$rate) {
-                    throw new \Exception('Exchange rate not available for IDR');
-                }
-                $amount = $order->total->decimal * $rate;
+                // $exchangeRates = Exchange::rates('USD', ['IDR']);
+                // $rates = $exchangeRates->getRates();
+                // $rate = $rates['IDR'];
+                // if (!$rate) {
+                //     throw new \Exception('Exchange rate not available for IDR');
+                // }
+                $amount = $order->total->decimal;
                 $createInvoice = new CreateInvoiceRequest([
                     'external_id' => $order->reference,
                     'amount' => $amount,
@@ -108,7 +108,6 @@ class OrderController extends Controller
                     'invoice_url' => $generateInvoice->getInvoiceUrl(),
                     'amount' => $amount,
                     'currency' => 'IDR',
-                    'exchange_rate' => $rate,
                 ];
                 $order->save();
 

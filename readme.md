@@ -34,6 +34,16 @@ DB_USERNAME=your_database_user
 DB_PASSWORD=your_database_password
 ```
 
+- Run the migrations
+```bash
+php artisan migrate
+```
+
+## Seed the database
+```bash
+php artisan db:seed
+```
+
 - Install lunar
 ```bash
 php artisan lunar:install
