@@ -159,19 +159,21 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         <CarouselContent>
                             {product.media?.map((media) => (
                                 <CarouselItem key={media.id}>
-                                    <img src={media.original_url} alt={media.file_name} className="h-full w-full object-cover" />
+                                    <AspectRatio ratio={1 / 1}>
+                                        <img src={media.original_url} alt={media.file_name} className="h-full w-full object-cover" />
+                                    </AspectRatio>
                                 </CarouselItem>
                             ))}
                         </CarouselContent>
                     </Carousel>
                     <div className="grid grid-cols-6 gap-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                         {product.media?.map((media, index) => (
-                            <div className="relative h-20 w-full" key={media.id}>
-                                <AspectRatio ratio={1 / 1}>
+                            <div className="relative w-full" key={media.id}>
+                                <AspectRatio ratio={2 / 3}>
                                     <img
                                         src={media.original_url}
                                         alt={media.file_name}
-                                        className="h-auto w-full hover:cursor-pointer"
+                                        className="h-full w-full object-cover object-center"
                                         onClick={() => onThumbClick(index)}
                                     />
                                 </AspectRatio>
@@ -223,7 +225,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         </Button>
                     </div>
                     <LoadingButton
-                        className="mt-4 w-full rounded border border-gray-300 bg-white text-black hover:bg-gray-50 hover:shadow-lg transition duration-300"
+                        className="mt-4 w-full rounded border border-gray-300 bg-white text-black transition duration-300 hover:bg-gray-50 hover:shadow-lg"
                         disabled={!selectedVariant}
                         loading={processing && processingType === 'addToCart'}
                         onClick={handleAddToCart}
@@ -231,7 +233,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         Add to Cart
                     </LoadingButton>
                     <LoadingButton
-                        className="mt-4 w-full rounded bg-[#301D17] text-white hover:bg-[#2b1914] hover:shadow-lg transition duration-300"
+                        className="mt-4 w-full rounded bg-[#301D17] text-white transition duration-300 hover:bg-[#2b1914] hover:shadow-lg"
                         loading={processing && processingType === 'directCheckout'}
                         disabled={!selectedVariant}
                         onClick={handleDirectCheckout}
