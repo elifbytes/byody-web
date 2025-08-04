@@ -47,7 +47,7 @@ export default function PaginationButton<T extends object>({ data }: Props<T>) {
     return (
         <Pagination className="mt-4 items-center justify-between px-3">
             <span className="text-sm text-gray-700">
-                Menampilkan {data.from} - {data.to} dari {data.total} data
+                Showing {data.from} - {data.to} of {data.total} items
             </span>
             <PaginationContent>{data.links.map((link, i) => renderLink(link, i.toString()))}</PaginationContent>
         </Pagination>

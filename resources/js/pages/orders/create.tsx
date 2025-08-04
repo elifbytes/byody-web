@@ -16,7 +16,7 @@ import { Address } from '@/types/address';
 import { Cart } from '@/types/cart';
 import { Country } from '@/types/country';
 import { ShippingOption } from '@/types/shipping';
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import parse from 'html-react-parser';
 import { ArrowLeft, ChevronRight, Ticket } from 'lucide-react';
 import { useState } from 'react';
@@ -160,7 +160,9 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div className="flex items-center justify-center">
-                    <AppLogo width={70} />
+                    <Link href="/" prefetch className="flex items-center space-x-2">
+                        <AppLogo width={70} />
+                    </Link>
                 </div>
             </div>
             <div className="container mx-auto grid gap-10 p-4 md:grid-cols-[3fr_2fr]">
