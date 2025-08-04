@@ -11,7 +11,7 @@ return [
      * Supported: 'null', 'fixer', 'exchange_rate', 'frankfurter', 'currency_geo', 'cache'
      */
 
-    'default' => env('EXCHANGE_DRIVER', 'frankfurter'),
+    'default' => env('EXCHANGE_DRIVER', 'cache'),
 
     'services' => [
 
