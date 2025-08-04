@@ -59,7 +59,12 @@ class OrderController extends Controller
         $cart->shippingAddress;
         $cart->shipping_option = $cart->getShippingOption();
         $shippingOptions = ShippingManifest::getOptions($cart);
-        $cart->load('lines.purchasable.product.thumbnail', 'lines.purchasable.prices', 'lines.purchasable.values');
+        $cart->load(
+        'lines.purchasable.images',         
+        'lines.purchasable.product.media',    
+        'lines.purchasable.prices',           
+        'lines.purchasable.values.option'     
+        );
 
         return inertia('orders/create', [
             'cart' => $cart,
