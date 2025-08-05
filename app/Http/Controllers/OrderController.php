@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\Country;
+use Lunar\Models\Order;
 use Lunar\Models\ProductVariant;
 use Worksome\Exchange\Facades\Exchange;
 use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
 use Xendit\Invoice\InvoiceApi;
+use App\Models\Review;
 
 class OrderController extends Controller
 {
@@ -27,10 +30,19 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = request()->user()->orders()->with(['addresses'])->latest()->get();
+        $orders = Order::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Get orders that already have reviews
+        $orderReviews = Review::whereIn('order_id', $orders->pluck('id'))
+            ->pluck('order_id')
+            ->mapWithKeys(fn($orderId) => [$orderId => true])
+            ->toArray();
 
         return inertia('orders/index', [
-            'orders' => $orders
+            'orders' => $orders,
+            'orderReviews' => $orderReviews,
         ]);
     }
 

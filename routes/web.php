@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Inertia\Inertia;
@@ -43,5 +44,9 @@ Route::get('/terms-of-service', function () {
     return Inertia::render('terms-of-service');
 })->name('terms-of-service');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+});
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
