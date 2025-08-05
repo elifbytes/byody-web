@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
+use App\Models\Review;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 use Lunar\Models\Collection;
@@ -11,9 +12,6 @@ use Lunar\Models\ProductVariant;
 
 class HomeController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
     public function __invoke()
     {
         $banners = Banner::with(['thumbnail'])
@@ -42,15 +40,25 @@ class HomeController extends Controller
 
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
-            
+
             ->take(10)
+            ->get();
+
+        $collections = Collection::with('thumbnail')->get();
+
+        // Get approved reviews
+        $reviews = Review::approved()
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
             ->get();
 
         return inertia('home', [
             'banners' => $banners,
             'newArrivals' => $newArrivals,
             'bestSellers' => $bestSellers,
-            
+            'collections' => $collections,
+            'reviews' => $reviews,
+
         ]);
     }
 }

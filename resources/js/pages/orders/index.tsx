@@ -9,13 +9,15 @@ import { usePrice } from '@/hooks/use-price';
 import { formatDate } from '@/lib/utils';
 import { Order, OrderStatus } from '@/types/order';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, LinkIcon } from 'lucide-react';
+import { ArrowLeft, LinkIcon, Star } from 'lucide-react';
 import { useCallback } from 'react';
 
 interface OrderPageProps {
     orders: Order[];
+    orderReviews: Record<number, boolean>; // order_id => has_review
 }
-function OrderPage({ orders }: OrderPageProps) {
+
+function OrderPage({ orders, orderReviews }: OrderPageProps) {
     const { formatPrice } = usePrice();
     const renderStatus = (status: OrderStatus) => {
         switch (status) {
@@ -31,11 +33,16 @@ function OrderPage({ orders }: OrderPageProps) {
                 return <Badge>-</Badge>;
         }
     };
+
     const handleOpenChange = useCallback((open: boolean) => {
         if (!open) {
             router.reload();
         }
     }, []);
+
+    const canReview = (order: Order) => {
+        return order.status === 'dispatched' && !orderReviews[order.id];
+    };
 
     return (
         <div className="min-h-screen">
@@ -70,7 +77,7 @@ function OrderPage({ orders }: OrderPageProps) {
                                     <TableCell>{formatDate(order.placed_at)}</TableCell>
                                     <TableCell>{renderStatus(order.status)}</TableCell>
                                     <TableCell>{formatPrice(order.total)}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="space-x-2">
                                         {order.meta?.invoice_url && order.status === 'awaiting-payment' ? (
                                             <Dialog onOpenChange={handleOpenChange}>
                                                 <DialogTrigger asChild>
@@ -100,6 +107,20 @@ function OrderPage({ orders }: OrderPageProps) {
                                                 </DialogContent>
                                             </Dialog>
                                         ) : null}
+
+                                        {canReview(order) && (
+                                            <Link href={route('reviews.create', { order: order.id })}>
+                                                <Button size="sm" variant="outline">
+                                                    <Star className="mr-1 h-4 w-4" /> Review Order
+                                                </Button>
+                                            </Link>
+                                        )}
+
+                                        {orderReviews[order.id] && (
+                                            <Badge variant="secondary" className="text-xs">
+                                                Review Submitted
+                                            </Badge>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}
