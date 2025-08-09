@@ -26,6 +26,7 @@ services:
       - beszel_socket:/beszel_socket
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      PORT: '${BESZEL_PORT}'
       LISTEN: '${BESZEL_LISTEN}'
       KEY: '${BESZEL_KEY}'
+      TOKEN: 
+      HUB_URL: '${BESZEL_HUB_URL}'
