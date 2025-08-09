@@ -19,7 +19,8 @@ RUN install-php-extensions \
     zip \
     intl \
     bcmath \
-    exif
+    exif \
+    mbstring
 
 WORKDIR /app
 

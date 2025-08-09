@@ -44,8 +44,6 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
-        $collections = Collection::with('thumbnail')->get();
-
         // Get approved reviews
         $reviews = Review::approved()
             ->orderBy('created_at', 'desc')
@@ -56,9 +54,7 @@ class HomeController extends Controller
             'banners' => $banners,
             'newArrivals' => $newArrivals,
             'bestSellers' => $bestSellers,
-            'collections' => $collections,
             'reviews' => $reviews,
-
         ]);
     }
 }
