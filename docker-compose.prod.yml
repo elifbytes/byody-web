@@ -28,5 +28,5 @@ services:
     environment:
       LISTEN: '${BESZEL_LISTEN}'
       KEY: '${BESZEL_KEY}'
-      TOKEN: 
+      TOKEN: '${BESZEL_TOKEN}'
       HUB_URL: '${BESZEL_HUB_URL}'
