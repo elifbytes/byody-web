@@ -12,6 +12,7 @@ use Lunar\Models\ProductType;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
+use Worksome\Exchange\Facades\Exchange;
 
 class ProductController extends Controller
 {
@@ -73,6 +74,10 @@ class ProductController extends Controller
                         $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
                         $factor = pow(10, $decimalPlaces);
                         $value = round($value * $factor);
+                        $exchangeRates = Exchange::rates('USD', ['IDR']);
+                        $rates = $exchangeRates->getRates();
+                        $rate = $rates['IDR'];
+                        $value = round($value * $rate);
                         $q->where('price', '>=', $value);
                     });
                 }),
@@ -81,6 +86,10 @@ class ProductController extends Controller
                         $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
                         $factor = pow(10, $decimalPlaces);
                         $value = round($value * $factor);
+                        $exchangeRates = Exchange::rates('USD', ['IDR']);
+                        $rates = $exchangeRates->getRates();
+                        $rate = $rates['IDR'];
+                        $value = round($value * $rate);
                         $q->where('price', '<=', $value);
                     });
                 }),

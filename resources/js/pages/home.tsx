@@ -8,6 +8,7 @@ import ReviewsCarousel from '@/components/reviews-carousel';
 import { Banner } from '@/types/banner';
 import { Collection } from '@/types/collection';
 import { Product } from '@/types/product';
+import { Review } from '@/types/review';
 import { Head } from '@inertiajs/react';
 
 interface HomeProps {
@@ -15,9 +16,10 @@ interface HomeProps {
     newArrivals: Product[];
     collections: Collection[];
     bestSellers: Product[];
+    reviews: Review[];
 }
 
-export default function Home({ collections, newArrivals, bestSellers }: HomeProps) {
+export default function Home({ collections, newArrivals, bestSellers, reviews }: HomeProps) {
     return (
         <>
             <AppHeader position="fixed" />
@@ -37,21 +39,10 @@ export default function Home({ collections, newArrivals, bestSellers }: HomeProp
                 <h1 className="my-5 text-center text-3xl">SHOP BY CATEGORY</h1>
                 <CollectionsCarousel collections={collections} />
                 <h1 className="my-5 text-center text-3xl">CUSTOMER REVIEWS</h1>
-                <ReviewsCarousel
-                    reviews={[
-                        { name: 'John Doe', stars: 4, comment: 'Produk sangat bagus dan pengiriman cepat!', date: '2024-06-01' },
-                        { name: 'Siti Aminah', stars: 5, comment: 'Sangat puas dengan kualitasnya, recommended!', date: '2024-06-02' },
-                        { name: 'Budi Santoso', stars: 3, comment: 'Cukup baik, tapi pengiriman agak lama.', date: '2024-06-03' },
-                        { name: 'Agus Wijaya', stars: 5, comment: 'Luar biasa, sesuai dengan deskripsi.', date: '2024-06-04' },
-                        { name: 'Maria Ulfa', stars: 2, comment: 'Kurang memuaskan, produk tidak sesuai harapan.', date: '2024-06-05' },
-                        { name: 'ahmad wijaya', stars: 4, comment: 'mantap, produk sesuai harga.', date: '2024-06-05' },
-                    ]}
-                />
+                <ReviewsCarousel reviews={reviews} />
                 <div className="mb-4" />
             </AppContent>
             <AppFooter />
-            
-            {/* Login/Register Popup - hanya muncul di halaman home */}
             <LoginRegisterPopup />
         </>
     );

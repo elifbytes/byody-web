@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Inertia\Inertia;
@@ -28,6 +29,9 @@ Route::middleware([
     Route::post('carts/apply-voucher', [CartController::class, 'applyVoucher'])->name('carts.apply-voucher');
 
     Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
+
+    Route::get('/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 });
 
 Route::get('/about', function () {

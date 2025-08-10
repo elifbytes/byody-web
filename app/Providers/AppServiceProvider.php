@@ -8,6 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Facades\Payments;
 use Lunar\Shipping\ShippingPlugin;
+use App\Filament\Resources\ReviewResource;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 ])
                 ->resources([
                     BannerResource::class,
+                    ReviewResource::class, // Add this line
                 ])
                 // Tambahkan dashboard custom melalui method pages()
                 ->pages([
