@@ -6,6 +6,7 @@ import { Card, CardHeader } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { Address } from '@/types/address';
@@ -74,7 +75,9 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
                             <DialogTitle>Edit Address</DialogTitle>
                             <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
                         </DialogHeader>
-                        <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                        <ScrollArea className="h-[calc(100vh-200px)]">
+                            <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                        </ScrollArea>
                         <LoadingButton loading={processing} onClick={handleAddAddress}>
                             Save Address
                         </LoadingButton>
