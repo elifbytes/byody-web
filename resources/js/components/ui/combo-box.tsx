@@ -12,10 +12,10 @@ import {
     CommandList,
 } from "@/components/ui/command";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
+    PopoverDialog,
+    PopoverDialogContent,
+    PopoverDialogTrigger,
+} from "@/components/ui/popover-dialog";
 
 interface Props {
     items: { value: string; label: string }[];
@@ -33,8 +33,8 @@ export function Combobox({
     const [open, setOpen] = React.useState<boolean>(false);
 
     return (
-        <Popover open={open} onOpenChange={setOpen} modal={true}>
-            <PopoverTrigger asChild>
+        <PopoverDialog open={open} onOpenChange={setOpen} modal={true}>
+            <PopoverDialogTrigger asChild>
                 <Button
                     variant="outline"
                     aria-expanded={open}
@@ -50,8 +50,8 @@ export function Combobox({
                     )}
                     <ChevronsUpDown className="opacity-50" />
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-transparent PopoverContent">
+            </PopoverDialogTrigger>
+            <PopoverDialogContent className="w-[--radix-popover-trigger-width] p-0 bg-transparent PopoverContent">
                 <Command
                     filter={(value, search, keywords) => {
                         const extendedValue = `${value} ${keywords?.join(" ")}`;
@@ -99,7 +99,7 @@ export function Combobox({
                         </CommandGroup>
                     </CommandList>
                 </Command>
-            </PopoverContent>
-        </Popover>
+            </PopoverDialogContent>
+        </PopoverDialog>
     );
 }
