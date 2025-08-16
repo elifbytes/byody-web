@@ -4,6 +4,7 @@ import ProductsCarousel from '@/components/products-carousel';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import { Lens } from '@/components/ui/lens';
 import { Toggle } from '@/components/ui/toggle';
 import { usePrice } from '@/hooks/use-price';
 import AppLayout from '@/layouts/app-layout';
@@ -25,6 +26,7 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
 
     const [carousel, setCarousel] = useState<CarouselApi>();
     const [carouselIndex, setCarouselIndex] = useState<number>(0);
+    const [hovering, setHovering] = useState<boolean>(false);
     const [selectedValues, setSelectedValues] = useState<ProductOptionValue[]>();
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
     const [quantity, setQuantity] = useState<number>(1);
@@ -162,7 +164,9 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                             {product.media?.map((media) => (
                                 <CarouselItem key={media.id}>
                                     <AspectRatio ratio={1 / 1}>
-                                        <img src={media.original_url} alt={media.file_name} className="h-full w-full object-cover" />
+                                        <Lens hovering={hovering} setHovering={setHovering}>
+                                            <img src={media.original_url} alt={media.file_name} className="h-full w-full object-cover" />
+                                        </Lens>
                                     </AspectRatio>
                                 </CarouselItem>
                             ))}
