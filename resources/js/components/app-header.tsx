@@ -18,7 +18,6 @@ import { Link, usePage } from '@inertiajs/react';
 import { Menu, Search } from 'lucide-react';
 import { useState } from 'react';
 import AppLogo from './app-logo';
-import AppLogoIcon from './app-logo-icon';
 import Cart from './cart';
 import SearchDialog from './search-dialog';
 
@@ -57,7 +56,7 @@ export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
                             <SheetContent side="left" className="flex h-full w-64 flex-col items-stretch justify-between bg-sidebar">
                                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 text-black dark:text-white" />
+                                    <AppLogo className="fill-foreground" width={70} />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
