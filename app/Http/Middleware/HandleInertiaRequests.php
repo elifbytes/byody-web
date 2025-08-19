@@ -48,9 +48,9 @@ class HandleInertiaRequests extends Middleware
         $collections = Collection::with(['thumbnail', 'defaultUrl'])->orderBy('_lft')->get()->toTree();
         $cart = CartSession::current(calculate: false);
 
-        $exchangeRates = Exchange::rates('IDR', ['USD']);
+        $exchangeRates = Exchange::rates('USD', ['IDR']);
         $rates = $exchangeRates->getRates();
-        $rate = $rates['USD'];
+        $rate = $rates['IDR'];
 
         return [
             ...parent::share($request),

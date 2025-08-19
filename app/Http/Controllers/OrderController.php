@@ -12,7 +12,6 @@ use Lunar\Models\Cart;
 use Lunar\Models\Country;
 use Lunar\Models\Order;
 use Lunar\Models\ProductVariant;
-use Worksome\Exchange\Facades\Exchange;
 use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
 use Xendit\Invoice\InvoiceApi;
@@ -30,7 +29,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::where('user_id', auth()->id())
+        $orders = Order::where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -72,10 +71,10 @@ class OrderController extends Controller
         $cart->shipping_option = $cart->getShippingOption();
         $shippingOptions = ShippingManifest::getOptions($cart);
         $cart->load(
-        'lines.purchasable.images',         
-        'lines.purchasable.product.media',    
-        'lines.purchasable.prices',           
-        'lines.purchasable.values.option'     
+            'lines.purchasable.images',
+            'lines.purchasable.product.media',
+            'lines.purchasable.prices',
+            'lines.purchasable.values.option'
         );
 
         return inertia('orders/create', [

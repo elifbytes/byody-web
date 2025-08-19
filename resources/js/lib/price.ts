@@ -7,7 +7,7 @@ export function formatPrice(price?: CastedPrice, exchangeRate?: number): string 
         return '-';
     }
 
-    const value = price.value * (exchangeRate || 1);
+    const value = price.value / (exchangeRate || 1);
 
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
