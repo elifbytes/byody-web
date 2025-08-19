@@ -38,7 +38,7 @@ class ProductController extends Controller
                                     $v,
                                     (new Collection())->getMorphClass()
                                 );
-                                return $url ? $url->id : null;
+                                return $url ? $url->element_id : null;
                             })->filter();
                             if ($ids->isEmpty()) {
                                 return;
@@ -51,10 +51,10 @@ class ProductController extends Controller
                             $value,
                             (new Collection())->getMorphClass()
                         );
-                        if (! $url) {
+                        if (!$url) {
                             return;
                         }
-                        $q->where('collections.id', $url->id);
+                        $q->where('collections.id', $url->element_id);
                     });
                 }),
                 AllowedFilter::callback('availability', function ($query, $value) {
