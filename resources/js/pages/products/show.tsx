@@ -20,10 +20,6 @@ interface ShowProductPageProps {
     bestSellers: Product[];
 }
 function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
-    const prices = product.variants?.[0]?.prices;
-    const price = prices?.[0]?.price;
-    const comparePrice = prices?.[0]?.compare_price;
-
     const [carousel, setCarousel] = useState<CarouselApi>();
     const [carouselIndex, setCarouselIndex] = useState<number>(0);
     const [hovering, setHovering] = useState<boolean>(false);
@@ -31,6 +27,10 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant>();
     const [quantity, setQuantity] = useState<number>(1);
     const [processingType, setProcessingType] = useState<'addToCart' | 'directCheckout'>();
+
+    const prices = selectedVariant?.prices || product.variants?.[0]?.prices;
+    const price = prices?.[0]?.price;
+    const comparePrice = prices?.[0]?.compare_price;
 
     const { formatPrice } = usePrice();
 

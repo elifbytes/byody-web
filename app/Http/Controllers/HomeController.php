@@ -24,12 +24,6 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
-        $newArrivals = Product::with(['thumbnail', 'defaultUrl', 'variants.prices', 'variants.images', 'media'])
-            ->where('status', 'published')
-            ->orderBy('products.created_at', 'desc')
-            ->take(10)
-            ->get();
-
         $bestSellers = Product::query()
             ->with(['thumbnail', 'defaultUrl', 'variants.prices'])
             ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
@@ -37,10 +31,8 @@ class HomeController extends Controller
             ->select('products.*')
             ->where('products.status', 'published')
             ->whereType('physical')
-
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
-
             ->take(10)
             ->get();
 
