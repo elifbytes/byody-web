@@ -4,7 +4,7 @@ import { SharedData } from '@/types';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { Minus, Plus, ShoppingCartIcon, Trash } from 'lucide-react';
 import { toast } from 'sonner';
-import AppLogoIcon from './app-logo-icon';
+import AppLogo from './app-logo';
 import CartLineCard from './cart-line-card';
 import { Button, buttonVariants } from './ui/button';
 import { NotificationBadge } from './ui/notification-badge';
@@ -114,7 +114,7 @@ function Cart() {
                     </ScrollArea>
                 ) : (
                     <div className="flex h-full flex-col items-center justify-center text-center text-sm text-neutral-500">
-                        <AppLogoIcon />
+                        <AppLogo className="fill-foreground" width={70} />
                         <p className="mt-4">Your cart is empty.</p>
                     </div>
                 )}
