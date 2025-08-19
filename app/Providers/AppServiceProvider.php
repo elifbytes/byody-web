@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
         Payments::extend('xendit', function () {
             return new \App\PaymentTypes\XenditPayment();
         });
-        
+
         LunarPanel::panel(
             fn($panel) =>
             $panel
@@ -31,10 +31,6 @@ class AppServiceProvider extends ServiceProvider
                 ->resources([
                     BannerResource::class,
                     ReviewResource::class, // Add this line
-                ])
-                // Tambahkan dashboard custom melalui method pages()
-                ->pages([
-                    Dashboard::class, // Register custom dashboard here
                 ])
                 ->navigationGroups([
                     'Content',
