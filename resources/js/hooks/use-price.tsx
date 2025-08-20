@@ -5,10 +5,17 @@ import { ProductVariant } from '@/types/product';
 import { usePage } from '@inertiajs/react';
 
 export function usePrice() {
-    const { exchangeRate } = usePage<SharedData>().props;
+    const { exchangeRate, currency } = usePage<SharedData>().props;
+
+    const getValue = (value: number | string | undefined, defaultValue: number): number => {
+        if (!value) {
+            return defaultValue;
+        }
+        return Math.round(Number(value) / (exchangeRate || 1));
+    }
 
     const formatPrice = (price?: CastedPrice): string => {
-        if (!price || !price.currency) {
+        if (!price) {
             return '-';
         }
 
@@ -16,7 +23,7 @@ export function usePrice() {
 
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: currency,
             notation: 'standard',
             maximumFractionDigits: 2,
         }).format(value);
@@ -58,6 +65,7 @@ export function usePrice() {
     };
 
     return {
+        getValue,
         exchangeRate,
         formatPrice,
         getProductVariantPrice,

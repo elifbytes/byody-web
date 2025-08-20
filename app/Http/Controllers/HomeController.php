@@ -4,11 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Banner;
 use App\Models\Review;
-use Illuminate\Database\Query\JoinClause;
-use Illuminate\Support\Facades\DB;
-use Lunar\Models\Collection;
 use Lunar\Models\Product;
-use Lunar\Models\ProductVariant;
 
 class HomeController extends Controller
 {
@@ -30,7 +26,6 @@ class HomeController extends Controller
             ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
             ->select('products.*')
             ->where('products.status', 'published')
-            ->whereType('physical')
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
             ->take(10)
@@ -48,5 +43,16 @@ class HomeController extends Controller
             'bestSellers' => $bestSellers,
             'reviews' => $reviews,
         ]);
+    }
+
+    public function setCurrency(string $code)
+    {
+        // Validate the currency
+        if (!in_array($code, ['USD', 'IDR'])) {
+            abort(400, 'Unsupported currency');
+        }
+        session(['currency' => $code]);
+
+        return redirect()->back();
     }
 }

@@ -26,13 +26,13 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
-    quote: { message: string; author: string };
     auth: Auth;
     cart?: Cart;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
     collections: Collection[];
     exchangeRate?: number;
+    currency?: string;
     [key: string]: unknown;
 }
 

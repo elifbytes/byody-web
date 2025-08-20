@@ -4,13 +4,13 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('set-currency/{code}', [HomeController::class, 'setCurrency'])->name('set-currency');
 Route::get('products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::resource('carts', CartController::class);
@@ -27,8 +27,6 @@ Route::middleware([
     Route::put('carts/set-address/{addressId}/{cart?}', [CartController::class, 'setAddress'])->name('carts.set-address');
     Route::put('carts/set-shipping-option/{identifier}/{cart?}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');
     Route::post('carts/apply-voucher', [CartController::class, 'applyVoucher'])->name('carts.apply-voucher');
-
-    Route::post('customers/update', [ProfileController::class, 'updateCustomer'])->name('customers.profile.update');
 
     Route::get('/reviews/create', [ReviewController::class, 'create'])->name('reviews.create');
     Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');

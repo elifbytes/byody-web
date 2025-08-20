@@ -1,7 +1,15 @@
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -9,14 +17,16 @@ import {
     NavigationMenuLink,
     NavigationMenuList,
     NavigationMenuTrigger,
+    navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { Menu, Search } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import AppLogo from './app-logo';
 import Cart from './cart';
 import SearchDialog from './search-dialog';
@@ -34,11 +44,27 @@ interface AppHeaderProps {
 
 export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
     const page = usePage<SharedData>();
-    const { auth, collections } = page.props;
+
+    const { auth, collections, currency } = page.props;
 
     const [openSearch, setOpenSearch] = useState<boolean>(false);
 
     const getInitials = useInitials();
+
+    const handleCurrencyChange = (value: string) => {
+        router.get(
+            route('set-currency', value),
+            {},
+            {
+                onSuccess: () => {
+                    toast.success(`Currency changed to ${value}`);
+                },
+                onError: () => {
+                    toast.error('Failed to change currency');
+                },
+            },
+        );
+    };
 
     return (
         <>
@@ -58,6 +84,21 @@ export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
                                 <SheetHeader className="flex justify-start text-left">
                                     <AppLogo className="fill-foreground" width={70} />
                                 </SheetHeader>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="link" className="w-min text-foreground">
+                                            {currency}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuLabel>Currency</DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuRadioGroup value={currency} onValueChange={handleCurrencyChange}>
+                                            <DropdownMenuRadioItem value="IDR">IDR</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="USD">USD</DropdownMenuRadioItem>
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">
                                         <div className="flex flex-col space-y-4">
@@ -102,6 +143,27 @@ export function AppHeader({ position = 'sticky' }: AppHeaderProps) {
 
                     {/* Desktop Navigation */}
                     <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="link"
+                                    className={navigationMenuTriggerStyle({
+                                        className:
+                                            'text-md bg-transparent p-0 font-normal text-background hover:bg-transparent hover:text-background hover:underline focus:bg-transparent focus:text-background data-[active=true]:bg-transparent data-[active=true]:text-accent-foreground data-[state=open]:bg-transparent',
+                                    })}
+                                >
+                                    {currency}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Currency</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuRadioGroup value={currency} onValueChange={handleCurrencyChange}>
+                                    <DropdownMenuRadioItem value="IDR">IDR</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="USD">USD</DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <NavigationMenu className="flex h-full items-stretch" viewport={false}>
                             <NavigationMenuList className="flex h-full items-stretch space-x-6">
                                 {collections.map((collection) =>

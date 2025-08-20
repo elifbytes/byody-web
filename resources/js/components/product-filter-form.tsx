@@ -1,8 +1,8 @@
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { usePrice } from '@/hooks/use-price';
 import { flattenCollections } from '@/lib/collection';
 import { UrlParams } from '@/types';
 import { Collection } from '@/types/collection';
@@ -20,14 +20,16 @@ interface ProductFilterFormProps {
     sort?: string;
 }
 
-const MAX_SLIDER_VALUE = 500; // Maximum value for the price slider
+const MAX_SLIDER_VALUE = 1000000; // Maximum value for the price slider
 
 export default function ProductFilterForm({ productTypes, collections, filters, sort }: ProductFilterFormProps) {
+    const { getValue } = usePrice();
     const [openSearch, setOpenSearch] = useState<boolean>(false);
     const urlParams: UrlParams = {
         filter: filters || {},
         sort: sort || '',
     };
+
     const flatCollections = flattenCollections(collections);
     // filters comma separated values to array
     // for collections
@@ -146,7 +148,7 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
                     defaultValue={priceSliderValue}
                     min={0}
                     max={MAX_SLIDER_VALUE}
-                    step={5}
+                    step={1000}
                     onValueCommit={(value) => {
                         handleFilterChange([
                             { filter: 'min_price', value: value[0].toString() },
@@ -157,24 +159,10 @@ export default function ProductFilterForm({ productTypes, collections, filters, 
                 />
                 <div className="mt-2 flex items-center justify-between space-x-4">
                     <div className="flex items-center space-x-1">
-                        <Label className="text-[12px]">Min</Label>
-                        <Input
-                            type="number"
-                            value={priceSliderValue[0]}
-                            onChange={(e) => handleFilterChange([{ filter: 'min_price', value: e.target.value }])}
-                            className="w-24 text-[14px]"
-                            placeholder="Min Price"
-                        />
+                        <Label className="text-[12px]">Min: {getValue(priceSliderValue[0], 0)}</Label>
                     </div>
                     <div className="flex items-center space-x-1">
-                        <Label className="text-[12px]">Max</Label>
-                        <Input
-                            type="number"
-                            value={priceSliderValue[1]}
-                            onChange={(e) => handleFilterChange([{ filter: 'max_price', value: e.target.value }])}
-                            className="w-24 text-[14px]"
-                            placeholder="Max Price"
-                        />
+                        <Label className="text-[12px]">Max: {getValue(priceSliderValue[1], getValue(MAX_SLIDER_VALUE, 0))}</Label>
                     </div>
                 </div>
             </div>

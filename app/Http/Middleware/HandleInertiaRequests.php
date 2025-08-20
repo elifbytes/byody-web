@@ -2,14 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 use Lunar\Facades\CartSession;
 use Lunar\Models\Collection;
-use Lunar\Models\CollectionGroup;
-use Lunar\Models\Contracts\Cart;
 use Tighten\Ziggy\Ziggy;
 use Worksome\Exchange\Facades\Exchange;
 
@@ -43,19 +39,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
         $collections = Collection::with(['thumbnail', 'defaultUrl'])->orderBy('_lft')->get()->toTree();
         $cart = CartSession::current(calculate: false);
 
-        $exchangeRates = Exchange::rates('USD', ['IDR']);
-        $rates = $exchangeRates->getRates();
-        $rate = $rates['IDR'];
+        $currency = session('currency', config('app.currency'));
+
+        if ($currency == 'IDR') {
+            $rate = 1; // Default to 1 if IDR is selected
+        } else {
+            $exchangeRates = Exchange::rates('USD', ['IDR']);
+            $rates = $exchangeRates->getRates();
+            $rate = $rates['IDR'];
+        }
 
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
             ],
@@ -67,6 +66,7 @@ class HandleInertiaRequests extends Middleware
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'false',
             'cart' => $cart,
             'exchangeRate' => $rate,
+            'currency' => $currency,
         ];
     }
 }

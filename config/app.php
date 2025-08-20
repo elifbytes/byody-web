@@ -124,4 +124,5 @@ return [
     ],
 
 
+    'currency' => env('APP_CURRENCY', 'IDR'),
 ];

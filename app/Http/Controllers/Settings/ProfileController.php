@@ -46,7 +46,7 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(AuthKitAccountDeletionRequest $request): RedirectResponse
+    public function destroy(AuthKitAccountDeletionRequest $request): \Symfony\Component\HttpFoundation\RedirectResponse
     {
         return $request->delete(
             using: fn(User $user) => $user->delete()

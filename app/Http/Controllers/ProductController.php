@@ -12,7 +12,6 @@ use Lunar\Models\ProductType;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
-use Worksome\Exchange\Facades\Exchange;
 
 class ProductController extends Controller
 {
@@ -38,7 +37,7 @@ class ProductController extends Controller
                                     $v,
                                     (new Collection())->getMorphClass()
                                 );
-                                return $url ? $url->element_id : null;
+                                return $url?->element_id;
                             })->filter();
                             if ($ids->isEmpty()) {
                                 return;
@@ -63,33 +62,15 @@ class ProductController extends Controller
                             $q->where('deleted_at', null)
                                 ->where('stock', '>', 0);
                         });
-                    } elseif ($value === 'all') {
-                        // No additional filter needed for 'all'
-                    } else {
-                        // Handle other cases if necessary
                     }
                 }),
                 AllowedFilter::callback('min_price', function ($query, $value) {
                     $query->whereHas('variants.prices', function ($q) use ($value) {
-                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
-                        $factor = pow(10, $decimalPlaces);
-                        $value = round($value * $factor);
-                        $exchangeRates = Exchange::rates('USD', ['IDR']);
-                        $rates = $exchangeRates->getRates();
-                        $rate = $rates['IDR'];
-                        $value = round($value * $rate);
                         $q->where('price', '>=', $value);
                     });
                 }),
                 AllowedFilter::callback('max_price', function ($query, $value) {
                     $query->whereHas('variants.prices', function ($q) use ($value) {
-                        $decimalPlaces = env('APP_CURRENCY_DECIMAL_PLACES', 2);
-                        $factor = pow(10, $decimalPlaces);
-                        $value = round($value * $factor);
-                        $exchangeRates = Exchange::rates('USD', ['IDR']);
-                        $rates = $exchangeRates->getRates();
-                        $rate = $rates['IDR'];
-                        $value = round($value * $rate);
                         $q->where('price', '<=', $value);
                     });
                 }),
@@ -146,7 +127,6 @@ class ProductController extends Controller
             ->join('order_lines', 'product_variants.id', '=', 'order_lines.purchasable_id')
             ->select('products.*')
             ->where('products.status', 'published')
-            ->whereType('physical')
             ->groupBy('products.id')
             ->orderByRaw('COUNT(order_lines.id) DESC')
             ->take(10)
@@ -158,19 +138,4 @@ class ProductController extends Controller
         ]);
     }
 
-    public function search(string $query)
-    {
-        $products = Product::search($query)
-            ->with([
-                'element.media',
-                'element.variants.values.option',
-                'element.variants.images',
-            ])
-            ->get();
-
-        return inertia('search', [
-            'products' => $products,
-            'query' => $query,
-        ]);
-    }
 }
