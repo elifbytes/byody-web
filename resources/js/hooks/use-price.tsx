@@ -21,6 +21,9 @@ export function usePrice() {
 
         const value = price.value / (exchangeRate || 1);
 
+        if (currency === 'IDR') {
+            return `Rp${value.toLocaleString('id-ID')}`;
+        }
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: currency,
