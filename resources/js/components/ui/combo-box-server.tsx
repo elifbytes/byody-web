@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
-import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
     Command,
@@ -10,9 +9,10 @@ import {
     CommandItem,
     CommandList,
 } from "./command";
-import { PopoverClose } from "@radix-ui/react-popover";
 import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { PopoverDialog, PopoverDialogContent, PopoverDialogTrigger } from '@/components/ui/popover-dialog';
+import { PopoverClose } from '@radix-ui/react-popover';
 
 interface Props<T extends object> {
     title?: string;
@@ -22,6 +22,7 @@ interface Props<T extends object> {
     size?: number;
     renderText: (value: T) => string;
     onChange?: (value: T) => void;
+    minInputLength?: number;
     searchFn: (search: string, offset: number, size: number) => Promise<T[]>;
 }
 const ComboBoxServer = <T extends object>({
@@ -32,6 +33,7 @@ const ComboBoxServer = <T extends object>({
     size = 25,
     renderText,
     onChange,
+    minInputLength = 0,
     searchFn,
 }: Props<T>) => {
     const [search, setSearch] = useState<string>("");
@@ -40,12 +42,17 @@ const ComboBoxServer = <T extends object>({
     const debouncedsearch = useDebounce<string>(search, 500);
 
     const getOptions = useCallback(async () => {
+        if (debouncedsearch.length < minInputLength) {
+            setOptions([]);
+            setCanLoadMore(false);
+            return;
+        }
         const searchResult = await searchFn(debouncedsearch || "", 0, size);
         if (searchResult.length === 0 || searchResult.length < size) {
             setCanLoadMore(false);
         }
         setOptions(searchResult);
-    }, [debouncedsearch, searchFn, size]);
+    }, [debouncedsearch, minInputLength, searchFn, size]);
 
     const getMoreOptions = useCallback(async () => {
         const searchResult = await searchFn(
@@ -71,8 +78,8 @@ const ComboBoxServer = <T extends object>({
     }, [getOptions]);
 
     return (
-        <Popover modal={true}>
-            <PopoverTrigger asChild>
+        <PopoverDialog modal={true}>
+            <PopoverDialogTrigger asChild>
                 <Button
                     variant="outline"
                     className={cn(
@@ -82,17 +89,17 @@ const ComboBoxServer = <T extends object>({
                     disabled={disabled}
                 >
                     <div className="truncate">
-                        {value ? renderText(value) : `Pilih ${title}`}
+                        {value ? renderText(value) : `Select ${title}`}
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent className="PopoverContent p-0">
+            </PopoverDialogTrigger>
+            <PopoverDialogContent className="PopoverContent p-0">
                 <Command shouldFilter={false}>
                     <CommandInput
                         className="active:border-primary"
-                        placeholder={`Cari ${title}...`}
-                        value={typeof search === "string" ? search : ""}
+                        placeholder={`Search ${title}... (please type at least ${minInputLength} characters)`}
+                        value={search}
                         onValueChange={(value) => setSearch(value)}
                     />
                     <CommandList>
@@ -128,15 +135,15 @@ const ComboBoxServer = <T extends object>({
                                         className="w-full h-7"
                                         onClick={getMoreOptions}
                                     >
-                                        Muat Lebih Banyak ↓
+                                        Load More ↓
                                     </Button>
                                 )}
                             </CommandItem>
                         </CommandGroup>
                     </CommandList>
                 </Command>
-            </PopoverContent>
-        </Popover>
+            </PopoverDialogContent>
+        </PopoverDialog>
     );
 };
 

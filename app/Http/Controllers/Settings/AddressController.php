@@ -15,7 +15,6 @@ class AddressController extends Controller
      */
     public function index()
     {
-        /** @var \App\Models\User */
         $user = Auth::user();
         $customer = $user->customers()->latest()->first();
         $addresses = $customer->addresses()->get();
@@ -42,16 +41,19 @@ class AddressController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'contact_email' => ['nullable', 'email', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
+            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
             'country_id' => ['required', 'exists:countries,id'],
-            'line_one' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
+            'line_one' => ['required', 'string', 'max:255'],
             'postcode' => ['required', 'string', 'max:20'],
             'delivery_instructions' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
+            'meta' => ['nullable', 'array'],
+            'meta.id' => ['required_with:meta', 'string', 'max:10'],
+            'meta.regency_id' => ['required_with:meta', 'string', 'max:10'],
+            'meta.name' => ['required_with:meta', 'string', 'max:255'],
         ]);
 
         $customer = $request->user()->customers()->latest()->first();
@@ -76,13 +78,13 @@ class AddressController extends Controller
             'last_name' => $data['last_name'],
             'line_one' => $data['line_one'],
             'city' => $data['city'],
-            'state' => $data['state'],
             'postcode' => $data['postcode'],
             'delivery_instructions' => $data['delivery_instructions'] ?? null,
             'contact_email' => $data['contact_email'] ?? null,
             'contact_phone' => $data['contact_phone'],
             'shipping_default' => $data['shipping_default'],
             'billing_default' => $data['billing_default'],
+            'meta' => $data['meta'] ?? null,
         ]);
 
         return redirect()->back();

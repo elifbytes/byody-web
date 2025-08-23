@@ -45,4 +45,10 @@ return [
         'secret_key' => env('XENDIT_SECRET_KEY'),
         'callback_token' => env('XENDIT_CALLBACK_TOKEN'),
     ],
+
+    'saitrans' => [
+        'base_url' => env('SAITRANS_API_URL', 'https://stg-lms.saitrans.id'),
+        'email' => env('SAITRANS_EMAIL', 'test@mail.com'),
+        'password' => env('SAITRANS_PASSWORD', 'test123'),
+    ]
 ];

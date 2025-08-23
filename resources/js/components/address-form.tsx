@@ -1,7 +1,8 @@
-import countryService from '@/services/country-service';
-import { Address } from '@/types/address';
-import { Country, State } from '@/types/country';
-import { useCallback, useEffect, useState } from 'react';
+import ComboBoxServer from '@/components/ui/combo-box-server';
+import saitransService from '@/services/saitrans-service';
+import { Address, District } from '@/types/address';
+import { Country } from '@/types/country';
+import { useCallback } from 'react';
 import InputError from './input-error';
 import { Combobox } from './ui/combo-box';
 import { Input } from './ui/input';
@@ -38,21 +39,12 @@ interface AddressFormProps {
     >;
 }
 function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
-    const [states, setStates] = useState<State[]>([]);
-
-    const handleCountryChange = useCallback(async () => {
-        if (data.country_id) {
-            const states = await countryService.getStates(data.country_id);
-            setStates(states);
-        }
-    }, [data.country_id]);
-
-    useEffect(() => {
-        handleCountryChange();
-    }, [handleCountryChange]);
+    const getDistricts = useCallback(async (search: string, page?: number, limit?: number) => {
+        return await saitransService.getDistricts(search, page, limit);
+    }, []);
 
     return (
-        <div className="grid gap-2 mx-2">
+        <div className="mx-2 grid gap-2">
             <div>
                 <Label>Email</Label>
                 <Input
@@ -99,33 +91,33 @@ function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
                 <InputError message={errors.country_id} />
             </div>
             <div>
-                <Label>State</Label>
-                <Combobox
-                    placeholder="State"
-                    items={states.map((state) => {
-                        return {
-                            value: state.name,
-                            label: state.name,
-                        };
-                    })}
-                    value={data.state || null}
-                    onChange={(value) => setData('state', value || '')}
-                />
-                <InputError message={errors.state} />
-            </div>
-            <div>
                 <Label>City</Label>
                 <Input placeholder="City" className="w-full" value={data.city} onChange={(e) => setData('city', e.target.value)} />
                 <InputError message={errors.city} />
             </div>
+            {data.country_id === 104 ? (
+                <div>
+                    <Label>District</Label>
+                    <ComboBoxServer<District>
+                        title="District"
+                        valueKey="id"
+                        renderText={(district) => district.name}
+                        searchFn={getDistricts}
+                        value={data.meta as unknown as District}
+                        onChange={(district) =>
+                            setData('meta', {
+                                id: district.id,
+                                regency_id: district.regency_id,
+                                name: district.name,
+                            })
+                        }
+                        minInputLength={3}
+                    />
+                </div>
+            ) : null}
             <div>
                 <Label>Post Code</Label>
-                <Input
-                    placeholder="Post Code"
-                    className="w-full"
-                    value={data.postcode}
-                    onChange={(e) => setData('postcode', e.target.value)}
-                />
+                <Input placeholder="Post Code" className="w-full" value={data.postcode} onChange={(e) => setData('postcode', e.target.value)} />
                 <InputError message={errors.postcode} />
             </div>
             <div>

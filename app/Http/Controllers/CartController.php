@@ -96,15 +96,14 @@ class CartController extends Controller
     public function setAddress(string $addressId, ?Cart $cart = null)
     {
         $cart = $cart ?: CartSession::current();
-        /** @var \App\Models\User */
         $user = Auth::user();
         $customer = $user->customers()->latest()->first();
-        $address = $customer->addresses()->findOrFail($addressId);
-        if (!$address) {
+        $customerAddress = $customer->addresses()->find($addressId);
+        if (!$customerAddress) {
             return redirect()->back()->withErrors(['address' => 'Address not found.']);
         }
         $address['meta'] = [
-            'address_id' => $address->id,
+            'address_id' => $customerAddress->id,
         ];
         $cart->setShippingAddress($address);
         $cart->setBillingAddress($address);
@@ -121,7 +120,6 @@ class CartController extends Controller
 
         $shippingOptions = ShippingManifest::getOptions($cart);
 
-        /** @var \Lunar\DataTypes\ShippingOption|null */
         $shippingOption = collect($shippingOptions)->firstWhere('identifier', $identifier);
         if (!$shippingOption) {
             return redirect()->back()->withErrors(['shipping' => 'Shipping option not found.']);
