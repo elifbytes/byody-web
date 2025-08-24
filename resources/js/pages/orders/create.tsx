@@ -17,7 +17,6 @@ import { Cart } from '@/types/cart';
 import { Country } from '@/types/country';
 import { ShippingOption } from '@/types/shipping';
 import { Link, useForm } from '@inertiajs/react';
-import parse from 'html-react-parser';
 import { ArrowLeft, ChevronRight, Ticket } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -28,7 +27,7 @@ interface CreateOrderPageProps {
     cart: Cart;
     shippingOptions?: ShippingOption[];
 }
-function CreateOrderPage({ addresses, countries, cart, shippingOptions }: CreateOrderPageProps) {
+export default function CreateOrderPage({ addresses, countries, cart, shippingOptions }: CreateOrderPageProps) {
     const [openAddAddressModal, setOpenAddAddressModal] = useState<boolean>(false);
     const [openEditAddressModal, setOpenEditAddressModal] = useState<boolean>(false);
     const [openVoucherModal, setOpenVoucherModal] = useState<boolean>(false);
@@ -174,8 +173,8 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>Edit Address</DialogTitle>
-                                <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
+                                <DialogTitle>Add New Address</DialogTitle>
+                                <DialogDescription>Fill in the address details below to add a new address to your account.</DialogDescription>
                             </DialogHeader>
                             <ScrollArea className="h-[calc(100vh-200px)]">
                                 <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
@@ -202,7 +201,7 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                                         <div>
                                             {`${address.first_name} ${address.last_name}`}
                                             <div className="text-sm text-muted-foreground">
-                                                {address.city}, {address.state}{' '}
+                                                {address.city}, {address.country?.name}
                                             </div>
                                             <div className="text-sm">{address.line_one}</div>
                                         </div>
@@ -236,14 +235,16 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
                     <Heading title="Shipping Options" description="Select a shipping option for your order" />
                     <RadioGroup value={cart?.shipping_option?.identifier || ''} onValueChange={handleSetShippingOption}>
                         {shippingOptions?.map((option) => (
-                            <Card key={option.identifier} className="mb-2">
+                            <Card key={option.service.id} className="mb-2 py-3">
                                 <CardHeader>
-                                    <div className="flex items-center gap-2">
-                                        <RadioGroupItem value={option.identifier} />
-                                        <div>
-                                            <div className="font-medium">{option.name}</div>
-                                            <div className="text-sm text-muted-foreground">{parse(option.description || '')}</div>
-                                            <div className="text-sm font-medium">{formatPrice(option.price)}</div>
+                                    <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+                                        <RadioGroupItem value={option.service.id} />
+                                        <div className="flex items-center justify-between gap-2">
+                                            <img src={option.image} alt={option.vendor_name} className="h-8" />
+                                            <div className='text-right'>
+                                                <div className="font-medium text-muted-foreground">{option.vendor_name}</div>
+                                                <div className="text-sm font-medium">{`Rp${option.price}`}</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardHeader>
@@ -345,5 +346,3 @@ function CreateOrderPage({ addresses, countries, cart, shippingOptions }: Create
         </div>
     );
 }
-
-export default CreateOrderPage;

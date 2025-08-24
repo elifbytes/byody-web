@@ -50,5 +50,6 @@ return [
         'base_url' => env('SAITRANS_API_URL', 'https://stg-lms.saitrans.id'),
         'email' => env('SAITRANS_EMAIL', 'test@mail.com'),
         'password' => env('SAITRANS_PASSWORD', 'test123'),
+        'origin_id' => env('SAITRANS_ORIGIN_ID', '3628'),
     ]
 ];

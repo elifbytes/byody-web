@@ -5,7 +5,6 @@ import { Customer } from './customer';
 import { Discount } from './discount';
 import { CastedPrice } from './price';
 import { ProductVariant } from './product';
-import { ShippingOption } from './shipping';
 
 export type Cart = {
     id: number;
@@ -26,7 +25,13 @@ export type Cart = {
     shipping_address?: CartAddress;
     billing_address?: CartAddress;
     calculation?: CartCalculation;
-    shipping_option?: ShippingOption;
+    shipping_option?: {
+        identifier: string;
+        name: string;
+        description?: string;
+        price: CastedPrice;
+        meta?: string;
+    };
 };
 
 export type CartLine = {

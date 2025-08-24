@@ -3,12 +3,15 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
-use App\Filament\Pages\Dashboard; // Updated import
+use App\Modifiers\CustomShippingModifier;
+use App\PaymentTypes\XenditPayment;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Support\Facades\LunarPanel;
+use Lunar\Base\ShippingModifiers;
+use Lunar\Facades\ModelManifest;
 use Lunar\Facades\Payments;
-use Lunar\Shipping\ShippingPlugin;
 use App\Filament\Resources\ReviewResource;
+use Lunar\Models\Contracts\Price;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -18,16 +21,13 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Payments::extend('xendit', function () {
-            return new \App\PaymentTypes\XenditPayment();
+            return new XenditPayment();
         });
 
         LunarPanel::panel(
             fn($panel) =>
             $panel
                 ->path('admin')
-                ->plugins([
-                    new ShippingPlugin,
-                ])
                 ->resources([
                     BannerResource::class,
                     ReviewResource::class, // Add this line
@@ -52,11 +52,15 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(ShippingModifiers $shippingModifiers): void
     {
-        \Lunar\Facades\ModelManifest::replace(
-            \Lunar\Models\Contracts\Price::class,
+        ModelManifest::replace(
+            Price::class,
             \App\Models\Price::class,
+        );
+
+        $shippingModifiers->add(
+            CustomShippingModifier::class
         );
     }
 }

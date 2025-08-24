@@ -17,7 +17,7 @@ class AddressController extends Controller
     {
         $user = Auth::user();
         $customer = $user->customers()->latest()->first();
-        $addresses = $customer->addresses()->get();
+        $addresses = $customer->addresses()->with('country')->orderBy('id')->get();
 
         $countries = Country::all();
 
@@ -72,6 +72,10 @@ class AddressController extends Controller
             $data['billing_default'] = false;
         }
 
+        $country = Country::find($data['country_id']);
+        if (!$country) {
+            return redirect()->back()->withErrors(['country_id' => 'Selected country does not exist.']);
+        }
         $customer->addresses()->create([
             'country_id' => $data['country_id'],
             'first_name' => $data['first_name'],
@@ -84,7 +88,10 @@ class AddressController extends Controller
             'contact_phone' => $data['contact_phone'],
             'shipping_default' => $data['shipping_default'],
             'billing_default' => $data['billing_default'],
-            'meta' => $data['meta'] ?? null,
+            'meta' => $data['meta'] ?? [
+                'id' => $country->iso2,
+                'name' => $country->name,
+            ],
         ]);
 
         return redirect()->back();
@@ -117,7 +124,6 @@ class AddressController extends Controller
             'country_id' => ['required', 'exists:countries,id'],
             'line_one' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
             'postcode' => ['required', 'string', 'max:20'],
             'delivery_instructions' => ['nullable', 'string', 'max:255'],
             'contact_email' => ['nullable', 'email', 'max:255'],
@@ -139,7 +145,6 @@ class AddressController extends Controller
             'last_name' => $data['last_name'],
             'line_one' => $data['line_one'],
             'city' => $data['city'],
-            'state' => $data['state'],
             'postcode' => $data['postcode'],
             'delivery_instructions' => $data['delivery_instructions'] ?? null,
             'contact_email' => $data['contact_email'] ?? null,
@@ -154,8 +159,9 @@ class AddressController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Address $address)
     {
-        //
+        $address->delete();
+        return redirect()->back();
     }
 }

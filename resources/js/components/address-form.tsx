@@ -103,7 +103,7 @@ function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
                         valueKey="id"
                         renderText={(district) => district.name}
                         searchFn={getDistricts}
-                        value={data.meta as unknown as District}
+                        value={data.meta as District}
                         onChange={(district) =>
                             setData('meta', {
                                 id: district.id,

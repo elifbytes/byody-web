@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Saitrans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
-use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\Country;
 use Lunar\Models\Order;
 use Lunar\Models\ProductVariant;
+use Throwable;
 use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
 use Xendit\Invoice\InvoiceApi;
@@ -21,7 +22,7 @@ class OrderController extends Controller
 {
     public function __construct()
     {
-        Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
+        Configuration::setXenditKey(config('services.xendit.secret_key'));
     }
 
     /**
@@ -53,7 +54,7 @@ class OrderController extends Controller
         $countries = Country::all();
         $customer = request()->user()->latestCustomer();
         if ($customer) {
-            $customer->load('addresses');
+            $customer->load('addresses.country');
         }
 
         $cart = $cart ?: CartSession::current();
@@ -67,15 +68,15 @@ class OrderController extends Controller
             'shippingTotal' => $cart->shippingTotal,
             'discountBreakdown' => $cart->discountBreakdown,
         ];
-        $cart->shippingAddress;
-        $cart->shipping_option = $cart->getShippingOption();
-        $shippingOptions = ShippingManifest::getOptions($cart);
-        $cart->load(
+        $cart->load([
             'lines.purchasable.images',
             'lines.purchasable.product.media',
             'lines.purchasable.prices',
             'lines.purchasable.values.option'
-        );
+        ]);
+
+        $cart->shipping_option = $cart->getShippingOption();
+        $shippingOptions = Saitrans::getShippingOptions($cart);
 
         return inertia('orders/create', [
             'cart' => $cart,
@@ -130,7 +131,7 @@ class OrderController extends Controller
                 // Clear the cart after order is placed
                 Cart::destroy($cart->id);
             });
-        } catch (CartException $ce) {
+        } catch (CartException|Throwable $ce) {
             return redirect()->back()->withErrors(['cart' => $ce->getMessage()]);
         }
 
@@ -170,57 +171,6 @@ class OrderController extends Controller
     }
 
     /**
-     * Add a new customer address.
-     */
-    public function createAddress(Request $request)
-    {
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'country_id' => ['required', 'exists:countries,id'],
-            'line_one' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
-            'postcode' => ['required', 'string', 'max:20'],
-            'delivery_instructions' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
-        ]);
-
-        $customer = request()->user()->customers()->latest()->first();
-        if ($customer) {
-            $customer->addresses()->create($data);
-        }
-
-        return redirect()->back();
-    }
-
-    /**
-     * Update the customer address.
-     */
-    public function updateAddress(Request $request, string $addressId)
-    {
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'country_id' => ['required', 'exists:countries,id'],
-            'line_one' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'state' => ['required', 'string', 'max:100'],
-            'postcode' => ['required', 'string', 'max:20'],
-            'delivery_instructions' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
-        ]);
-        $customer = request()->user()->customers()->latest()->first();
-        if ($customer) {
-            $address = $customer->addresses()->findOrFail($addressId);
-            $address->update($data);
-        }
-        return redirect()->back();
-    }
-
-    /**
      * Direct checkout from product page
      */
     public function directCheckout(Request $request)
@@ -230,8 +180,12 @@ class OrderController extends Controller
             'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
-        $productVariant = ProductVariant::findOrFail($data['product_variant_id']);
+        $productVariant = ProductVariant::find($data['product_variant_id']);
+        if (!$productVariant) {
+            return redirect()->back()->withErrors(['product_variant_id' => 'Product variant not found.']);
+        }
 
+        /** @var Cart $cart */
         $cart = Cart::create([
             'currency_id' => CartSession::getCurrency()->id,
             'channel_id' => CartSession::getChannel()->id,
@@ -239,12 +193,7 @@ class OrderController extends Controller
             'customer_id' => optional(request()->user())->latestCustomer()?->id,
         ]);
 
-        try {
-            $cart->add($productVariant, $data['quantity']);
-        } catch (\Lunar\Exceptions\Carts\CartException $e) {
-            $error = $e->getMessage();
-            return redirect()->back()->withErrors(['order' => $error]);
-        }
+        $cart->add($productVariant, $data['quantity']);
 
         return redirect()->route('orders.create', $cart->id);
     }

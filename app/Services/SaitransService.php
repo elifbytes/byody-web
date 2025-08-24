@@ -5,8 +5,8 @@ namespace App\Services;
 use Exception;
 use Http;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Lunar\Models\Cart;
 
 class SaitransService
 {
@@ -14,6 +14,7 @@ class SaitransService
     private string $email;
     private string $password;
     private string $access_token;
+
     public function __construct()
     {
         $this->base_url = config('services.saitrans.base_url');
@@ -49,7 +50,11 @@ class SaitransService
         return $this->access_token;
     }
 
-    public function getDistrict(string $search, int $page=1, int $limit=10): JsonResponse
+    /**
+     * @throws ConnectionException
+     * @throws Exception
+     */
+    public function getDistrict(string $search, int $page = 1, int $limit = 10): array
     {
         $url = $this->base_url . '/api/v2/location/district';
         $query = [
@@ -57,15 +62,57 @@ class SaitransService
             'page' => $page,
             'limit' => $limit,
         ];
-        try {
-            $response = Http::withHeader('Accept', 'application/json')->withToken($this->access_token)->get($url, $query);
-        } catch (ConnectionException|Exception $e) {
-            return response()->json(['message' => $e->getMessage()], $e->getCode());
-        }
+        $response = Http::withHeader('Accept', 'application/json')->withToken($this->access_token)->get($url, $query);
         if ($response->successful()) {
-            return response()->json($response->json('data'));
+            return $response->json('data');
         } else {
-            return response()->json(['message' => 'Failed to fetch districts'], $response->status());
+            throw new Exception('Failed to fetch districts');
         }
+    }
+
+    /**
+     * @throws ConnectionException
+     * @throws Exception
+     */
+    public function getTariff(string $country_iso, string $origin_id, string $destination_id, array $goods, bool $is_export = false): array
+    {
+        $url = $this->base_url . '/api/v2/tariff/' . ($is_export ? 'export' : 'domestic');
+        $data = [
+            'country_iso' => $country_iso,
+            'origin_id' => $origin_id,
+            'destination_id' => $destination_id,
+            'goods' => $goods,
+        ];
+        $response = Http::withToken($this->access_token)->post($url, $data);
+
+        if ($response->successful()) {
+            return $response->json('data');
+        } else {
+            throw new Exception('Failed to fetch tariff');
+        }
+    }
+
+    public function getShippingOptions(Cart $cart): array
+    {
+        $shippingAddress = $cart->shippingAddress;
+        if (!$shippingAddress) {
+            return [];
+        }
+        $destinationId = $shippingAddress->meta['destination_id'];
+        $goods = $cart->lines->map(fn($line) => [
+            'goods_name' => $line->purchasable->product->translateAttribute('name'),
+            'goods_type' => 'package',
+            'qty' => $line->quantity,
+            'weight' => $line->purchasable->weight->getValue(),
+            'vol_longth' => $line->purchasable->length->to('length.cm')->convert()->getValue(),
+            'vol_width' => $line->purchasable->width->to('length.cm')->convert()->getValue(),
+            'vol_height' => $line->purchasable->height->to('length.cm')->convert()->getValue(),
+        ])->toArray();
+        try {
+            $SaitransShippingOptions = $this->getTariff('ID', config('services.saitrans.origin_id'), $destinationId, $goods, !is_numeric($destinationId));
+        } catch (ConnectionException|Exception $e) {
+            return [];
+        }
+        return $SaitransShippingOptions['data'];
     }
 }

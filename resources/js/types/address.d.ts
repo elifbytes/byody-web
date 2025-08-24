@@ -28,29 +28,29 @@ export type District = {
     regency_id: string;
     name: string;
     connecting: string;
-    regency: {
-        id: string;
-        country_id: string;
-        state_id: string;
-        name: string;
-        regency_type: string;
-        state: {
-            id: string;
-            country_id: string;
-            name: string;
-            country: {
-                id: string;
-                flag: string;
-                iso: string;
-                name: string;
-                official: string;
-                iso3: string;
-                numcode: string;
-                phonecode: string;
-                currency_iso3: string;
-                currency_name: string;
-                currency_symbol: string;
-            }
-        }
-    }
+    // regency: {
+    //     id: string;
+    //     country_id: string;
+    //     state_id: string;
+    //     name: string;
+    //     regency_type: string;
+    //     state: {
+    //         id: string;
+    //         country_id: string;
+    //         name: string;
+    //         country: {
+    //             id: string;
+    //             flag: string;
+    //             iso: string;
+    //             name: string;
+    //             official: string;
+    //             iso3: string;
+    //             numcode: string;
+    //             phonecode: string;
+    //             currency_iso3: string;
+    //             currency_name: string;
+    //             currency_symbol: string;
+    //         }
+    //     }
+    // }
 }

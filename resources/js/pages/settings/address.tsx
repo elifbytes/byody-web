@@ -1,18 +1,19 @@
 import AddressForm from '@/components/address-form';
+import DeleteButton from '@/components/delete-button';
 import HeadingSmall from '@/components/heading-small';
 import LoadingButton from '@/components/loading-button';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader } from '@/components/ui/card';
+import { Card, CardAction, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { Address } from '@/types/address';
 import { Country } from '@/types/country';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddressProps {
@@ -20,7 +21,6 @@ interface AddressProps {
     countries: Country[];
 }
 export default function AddressPage({ addresses, countries }: AddressProps) {
-    const [openModal, setOpenModal] = useState<boolean>(false);
     const { data, setData, post, put, transform, reset, processing, errors } = useForm<Omit<Address, 'id'>>({
         contact_email: '',
         first_name: '',
@@ -39,13 +39,13 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
         post(route('address.store'), {
             onSuccess: () => {
                 toast.success('Address added successfully');
-                setOpenModal(false); // Close the modal after successful addition
                 reset(); // Reset the form data
             },
             onError: (errors) => {
                 console.error('Error adding address:', errors);
                 toast.error('Failed to add address');
             },
+            preserveState: false,
         });
     };
 
@@ -58,6 +58,7 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
                 console.error('Error updating address:', errors);
                 toast.error('Failed to update address');
             },
+            preserveState: false,
         });
     };
 
@@ -66,14 +67,14 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
             <Head title="Address settings" />
             <SettingsLayout>
                 <HeadingSmall title="Address Settings" description="Manage your addresses for shipping and billing." />
-                <Dialog open={openModal} onOpenChange={setOpenModal}>
+                <Dialog>
                     <DialogTrigger asChild>
-                        <Button>Add New Address</Button>
+                        <Button onClick={() => reset()}>Add New Address</Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Edit Address</DialogTitle>
-                            <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
+                            <DialogTitle>Add New Address</DialogTitle>
+                            <DialogDescription>Please fill out the form below to add a new address.</DialogDescription>
                         </DialogHeader>
                         <ScrollArea className="h-[calc(100vh-200px)]">
                             <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
@@ -114,12 +115,44 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
                                         <TableCell>
                                             <Card>
                                                 <CardHeader>
-                                                    <div className="text-lg font-semibold">{`${address.first_name} ${address.last_name}`}</div>
-                                                    <div className="text-sm text-muted-foreground">{address.line_one}</div>
-                                                    <div>
-                                                        {address.city}, {address.state}{' '}
-                                                    </div>
-                                                    <div>{address.country?.name}</div>
+                                                    <CardTitle>{`${address.first_name} ${address.last_name}`}</CardTitle>
+                                                    <CardDescription>
+                                                        {address.city} {address.country?.name}
+                                                        <div>{address.line_one}</div>
+                                                    </CardDescription>
+                                                    <CardAction>
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                <Button variant="ghost" onClick={() => setData(address)}>
+                                                                    <Edit />
+                                                                </Button>
+                                                            </DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader>
+                                                                    <DialogTitle>Edit Address</DialogTitle>
+                                                                    <DialogDescription>
+                                                                        Please update the form below to edit the address.
+                                                                    </DialogDescription>
+                                                                </DialogHeader>
+                                                                <ScrollArea className="h-[calc(100vh-200px)]">
+                                                                    <AddressForm
+                                                                        data={data}
+                                                                        setData={setData}
+                                                                        countries={countries}
+                                                                        errors={errors}
+                                                                    />
+                                                                </ScrollArea>
+                                                                <LoadingButton loading={processing} onClick={() => handleUpdateAddress(address.id)}>
+                                                                    Save Address
+                                                                </LoadingButton>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                        <DeleteButton title="Address" route={route('address.destroy', address.id)}>
+                                                            <Button variant="ghost" size="sm">
+                                                                <Trash className="text-destructive" />
+                                                            </Button>
+                                                        </DeleteButton>
+                                                    </CardAction>
                                                 </CardHeader>
                                             </Card>
                                         </TableCell>
