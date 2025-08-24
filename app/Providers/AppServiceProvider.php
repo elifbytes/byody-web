@@ -9,6 +9,7 @@ use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Facades\Payments;
 use Lunar\Shipping\ShippingPlugin;
 use App\Filament\Resources\ReviewResource;
+use App\Filament\Resources\OrderResource;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
                 ->resources([
                     BannerResource::class,
                     ReviewResource::class, // Add this line
+                    OrderResource::class, // Add custom order resource
                 ])
                 ->navigationGroups([
                     'Content',

@@ -40,6 +40,16 @@ class CartController extends Controller
 
         $productVariant = ProductVariant::findOrFail($request->product_variant_id);
         $quantity = $request->quantity;
+        
+        // Check stock availability
+        if ($productVariant->stock <= 0) {
+            return redirect()->back()->withErrors(['cart' => 'Stock habis, silahkan ganti dengan opsi lain']);
+        }
+        
+        if ($quantity > $productVariant->stock) {
+            return redirect()->back()->withErrors(['cart' => "Stock hanya tersedia {$productVariant->stock} item"]);
+        }
+        
         CartSession::manager()->add($productVariant, $quantity);
 
         return redirect()->back()->with('success', 'Product added to cart successfully.');
@@ -70,6 +80,21 @@ class CartController extends Controller
             'cart_line_id' => 'required|exists:cart_lines,id',
             'quantity' => 'required|integer|min:1',
         ]);
+
+        $cartLine = $cart->lines()->findOrFail($request->cart_line_id);
+        $productVariant = $cartLine->purchasable;
+        $quantity = $request->quantity;
+        
+        // Check stock availability
+        if ($productVariant instanceof ProductVariant) {
+            if ($productVariant->stock <= 0) {
+                return redirect()->back()->withErrors(['cart' => 'Stock habis, silahkan ganti dengan opsi lain']);
+            }
+            
+            if ($quantity > $productVariant->stock) {
+                return redirect()->back()->withErrors(['cart' => "Stock hanya tersedia {$productVariant->stock} item"]);
+            }
+        }
 
         $cart->updateLine($request->cart_line_id, $request->quantity);
 

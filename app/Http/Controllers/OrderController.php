@@ -16,6 +16,7 @@ use Xendit\Configuration;
 use Xendit\Invoice\CreateInvoiceRequest;
 use Xendit\Invoice\InvoiceApi;
 use App\Models\Review;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -98,7 +99,16 @@ class OrderController extends Controller
             $cart = Cart::find($data['cart_id']) ?: CartSession::current();
 
             DB::transaction(function () use ($cart) {
-                // TODO: Validate if stock is available
+                // Validate stock availability before creating order
+                foreach ($cart->lines as $line) {
+                    $productVariant = $line->purchasable;
+                    if ($productVariant instanceof ProductVariant) {
+                        if ($productVariant->stock < $line->quantity) {
+                            throw new \Exception("Stock untuk {$productVariant->product->translateAttribute('name')} tidak mencukupi. Stock tersedia: {$productVariant->stock}, diminta: {$line->quantity}");
+                        }
+                    }
+                }
+                
                 $order = $cart->createOrder();
                 // set placed_at timestamp
                 $order->placed_at = now();
@@ -126,6 +136,16 @@ class OrderController extends Controller
                     'currency' => 'IDR',
                 ];
                 $order->save();
+
+                // Reduce stock for each order line after successful order creation
+                foreach ($order->lines as $orderLine) {
+                    if ($orderLine->purchasable_type === (new ProductVariant())->getMorphClass()) {
+                        $productVariant = ProductVariant::find($orderLine->purchasable_id);
+                        if ($productVariant) {
+                            $productVariant->decrement('stock', $orderLine->quantity);
+                        }
+                    }
+                }
 
                 // Clear the cart after order is placed
                 Cart::destroy($cart->id);
@@ -221,7 +241,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Direct checkout from product page
+     * Direct checkout from product pa  ge
      */
     public function directCheckout(Request $request)
     {
@@ -231,6 +251,15 @@ class OrderController extends Controller
         ]);
 
         $productVariant = ProductVariant::findOrFail($data['product_variant_id']);
+        
+        // Check stock availability
+        if ($productVariant->stock <= 0) {
+            return redirect()->back()->withErrors(['order' => 'Stock habis, silahkan ganti dengan opsi lain']);
+        }
+        
+        if ($data['quantity'] > $productVariant->stock) {
+            return redirect()->back()->withErrors(['order' => "Stock hanya tersedia {$productVariant->stock} item"]);
+        }
 
         $cart = Cart::create([
             'currency_id' => CartSession::getCurrency()->id,
@@ -239,7 +268,7 @@ class OrderController extends Controller
             'customer_id' => optional(request()->user())->latestCustomer()?->id,
         ]);
 
-        try {
+        try {   
             $cart->add($productVariant, $data['quantity']);
         } catch (\Lunar\Exceptions\Carts\CartException $e) {
             $error = $e->getMessage();
@@ -247,5 +276,22 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.create', $cart->id);
+    }
+
+    /**
+     * Download order PDF
+     */
+    public function downloadPdf(Order $order)
+    {
+        // Check if user has permission to view this order
+        if ($order->user_id !== Auth::id() && !Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized access to order.');
+        }
+
+        $order->load(['lines', 'user', 'addresses', 'shipping_address', 'billing_address']);
+
+        $pdf = Pdf::loadView('orders.pdf', compact('order'));
+        
+        return $pdf->download('order-' . $order->reference . '.pdf');
     }
 }

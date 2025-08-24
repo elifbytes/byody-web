@@ -23,6 +23,7 @@ Route::middleware([
     Route::get('orders/create/{cart?}', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
     Route::post('orders/direct-checkout', [OrderController::class, 'directCheckout'])->name('orders.direct-checkout');
+    Route::get('orders/{order}/pdf', [OrderController::class, 'downloadPdf'])->name('orders.pdf');
 
     Route::put('carts/set-address/{addressId}/{cart?}', [CartController::class, 'setAddress'])->name('carts.set-address');
     Route::put('carts/set-shipping-option/{identifier}/{cart?}', [CartController::class, 'setShippingOption'])->name('carts.set-shipping-option');

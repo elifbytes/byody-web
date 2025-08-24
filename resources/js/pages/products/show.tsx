@@ -47,6 +47,18 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const handleAddToCart = () => {
         setProcessingType('addToCart');
         if (!selectedVariant) return;
+        
+        // Check stock availability
+        if ((selectedVariant?.stock ?? 0) <= 0) {
+            toast.error('Stock habis, silahkan ganti dengan opsi lain');
+            return;
+        }
+        
+        if (quantity > (selectedVariant?.stock ?? 0)) {
+            toast.error(`Stock hanya tersedia ${selectedVariant.stock} item`);
+            return;
+        }
+        
         // Transform the form data to include selected variant and quantity
         transform((data) => ({
             ...data,
@@ -71,6 +83,18 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
     const handleDirectCheckout = () => {
         setProcessingType('directCheckout');
         if (!selectedVariant) return;
+        
+        // Check stock availability
+        if ((selectedVariant?.stock ?? 0) <= 0) {
+            toast.error('Stock habis, silahkan ganti dengan opsi lain');
+            return;
+        }
+        
+        if (quantity > (selectedVariant?.stock ?? 0)) {
+            toast.error(`Stock hanya tersedia ${selectedVariant.stock} item`);
+            return;
+        }
+        
         // Transform the form data to include selected variant and quantity
         transform((data) => ({
             ...data,
@@ -218,33 +242,42 @@ function ShowProductPage({ product, bestSellers }: ShowProductPageProps) {
                         <div className="mt-4">
                             <h2 className="font-semibold">Selected Variant</h2>
                             <p className="text-sm">SKU: {selectedVariant.sku}</p>
-                            <p className="text-sm text-muted-foreground">Stock: {selectedVariant.stock}</p>
+                            <p className={`text-sm ${(selectedVariant?.stock ?? 0) <= 0 ? 'text-red-500 font-semibold' : 'text-muted-foreground'}`}>
+                                Stock: {selectedVariant.stock}
+                                {(selectedVariant?.stock ?? 0) <= 0 && ' (Habis)'}
+                            </p>
                         </div>
                     )}
                     <div className="mt-4 flex items-center justify-center">
-                        <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}>
+                        <Button 
+                            disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0} 
+                            onClick={() => setQuantity((prev) => Math.max(prev - 1, 1))}
+                        >
                             <Minus className="h-4 w-4" />
                         </Button>
                         <div className="mx-10">{quantity}</div>
-                        <Button disabled={!selectedVariant} onClick={() => setQuantity((prev) => Math.min(prev + 1, selectedVariant?.stock || 1))}>
+                        <Button 
+                            disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0} 
+                            onClick={() => setQuantity((prev) => Math.min(prev + 1, selectedVariant?.stock || 1))}
+                        >
                             <Plus className="h-4 w-4" />
                         </Button>
                     </div>
                     <LoadingButton
-                        className="mt-4 w-full rounded border border-gray-300 bg-white text-black transition duration-300 hover:bg-gray-50 hover:shadow-lg"
-                        disabled={!selectedVariant}
+                        className="mt-4 w-full rounded border border-gray-300 bg-white text-black transition duration-300 hover:bg-gray-50 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0}
                         loading={processing && processingType === 'addToCart'}
                         onClick={handleAddToCart}
                     >
-                        Add to Cart
+                        {(selectedVariant?.stock ?? 0) <= 0 ? 'Stock Habis' : 'Add to Cart'}
                     </LoadingButton>
                     <LoadingButton
-                        className="mt-4 w-full rounded bg-[#301D17] text-white transition duration-300 hover:bg-[#2b1914] hover:shadow-lg"
+                        className="mt-4 w-full rounded bg-[#301D17] text-white transition duration-300 hover:bg-[#2b1914] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         loading={processing && processingType === 'directCheckout'}
-                        disabled={!selectedVariant}
+                        disabled={!selectedVariant || (selectedVariant?.stock ?? 0) <= 0}
                         onClick={handleDirectCheckout}
                     >
-                        Checkout
+                        {(selectedVariant?.stock ?? 0) <= 0 ? 'Stock Habis' : 'Checkout'}
                     </LoadingButton>
                     <InputError message={errors.product_variant_id} />
                     <InputError message={errors.quantity} />
