@@ -24,14 +24,6 @@ export type Cart = {
     addresses?: CartAddress[];
     shipping_address?: CartAddress;
     billing_address?: CartAddress;
-    calculation?: CartCalculation;
-    shipping_option?: {
-        identifier: string;
-        name: string;
-        description?: string;
-        price: CastedPrice;
-        meta?: string;
-    };
 };
 
 export type CartLine = {
@@ -42,7 +34,6 @@ export type CartLine = {
     quantity: number;
     meta?: string;
     discounts?: Discount[];
-    calculation?: CartCalculation;
     purchasable?: ProductVariant;
 };
 

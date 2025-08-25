@@ -7,6 +7,7 @@ interface CartLineCardProps {
 }
 
 function CartLineCard({ line }: CartLineCardProps) {
+    console.log(line);
     const { getProductVariantPrice } = usePrice();
     const variantImage = line.purchasable?.images && line.purchasable.images.length > 0 ? line.purchasable.images[0].original_url : null;
 

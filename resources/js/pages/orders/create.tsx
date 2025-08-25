@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { usePrice } from '@/hooks/use-price';
 import { Address } from '@/types/address';
-import { Cart } from '@/types/cart';
+import { Cart, CartCalculation } from '@/types/cart';
 import { Country } from '@/types/country';
 import { ShippingOption } from '@/types/shipping';
 import { Link, useForm } from '@inertiajs/react';
@@ -26,8 +26,10 @@ interface CreateOrderPageProps {
     countries: Country[];
     cart: Cart;
     shippingOptions?: ShippingOption[];
+    cartCalculation: CartCalculation;
+    cartShippingOption?: ShippingOption;
 }
-export default function CreateOrderPage({ addresses, countries, cart, shippingOptions }: CreateOrderPageProps) {
+export default function CreateOrderPage({ addresses, countries, cart, shippingOptions, cartCalculation, cartShippingOption }: CreateOrderPageProps) {
     const [openAddAddressModal, setOpenAddAddressModal] = useState<boolean>(false);
     const [openEditAddressModal, setOpenEditAddressModal] = useState<boolean>(false);
     const [openVoucherModal, setOpenVoucherModal] = useState<boolean>(false);
@@ -233,17 +235,20 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                     </RadioGroup>
                     <Separator />
                     <Heading title="Shipping Options" description="Select a shipping option for your order" />
-                    <RadioGroup value={cart?.shipping_option?.identifier || ''} onValueChange={handleSetShippingOption}>
+                    <RadioGroup value={cartShippingOption?.identifier || ''} onValueChange={handleSetShippingOption}>
                         {shippingOptions?.map((option) => (
-                            <Card key={option.service.id} className="mb-2 py-3">
+                            <Card key={option.identifier} className="mb-2 py-3">
                                 <CardHeader>
                                     <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                                        <RadioGroupItem value={option.service.id} />
+                                        <RadioGroupItem value={option.identifier} />
                                         <div className="flex items-center justify-between gap-2">
-                                            <img src={option.image} alt={option.vendor_name} className="h-8" />
-                                            <div className='text-right'>
-                                                <div className="font-medium text-muted-foreground">{option.vendor_name}</div>
-                                                <div className="text-sm font-medium">{`Rp${option.price}`}</div>
+                                            <img src={option.meta?.image || '/placeholder.svg'} alt={option.name} className="h-8 rounded-sm" />
+                                            <div className="text-right">
+                                                <div className="font-medium text-muted-foreground">
+                                                    {option.name}{' '}
+                                                    <span className="text-xs">{option.meta?.lead_time && `(${option.meta?.lead_time})`}</span>
+                                                </div>
+                                                <div className="text-sm font-medium">{formatPrice(option.price)}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -293,11 +298,11 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
-                            {(cart.calculation?.discountBreakdown?.length || 0) > 0 && (
+                            {(cartCalculation?.discountBreakdown?.length || 0) > 0 && (
                                 <div className="mt-2 text-xs text-muted-foreground">
                                     <span className="font-medium">Applied Discounts:</span>
                                     <ul className="list-disc pl-4">
-                                        {cart.calculation?.discountBreakdown?.map((item, index) => (
+                                        {cartCalculation?.discountBreakdown?.map((item, index) => (
                                             <li key={index}>
                                                 {item.discount.name}: {formatPrice(item.price)}
                                             </li>
@@ -310,29 +315,29 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                         <CardContent>
                             <div>
                                 <span className="text-sm font-medium">Subtotal</span>
-                                <span className="float-right text-sm font-medium">{formatPrice(cart?.calculation?.subTotal)}</span>
+                                <span className="float-right text-sm font-medium">{formatPrice(cartCalculation?.subTotal)}</span>
                             </div>
                             <div>
                                 <span className="text-sm font-medium">Discount</span>
-                                <span className="float-right text-sm font-medium">{formatPrice(cart?.calculation?.discountTotal)}</span>
+                                <span className="float-right text-sm font-medium">{formatPrice(cartCalculation?.discountTotal)}</span>
                             </div>
                             <Separator />
                             <div className="mt-2">
                                 <span className="text-sm font-medium">Subtotal Discounted</span>
-                                <span className="float-right text-sm font-medium">{formatPrice(cart?.calculation?.subTotalDiscounted)}</span>
+                                <span className="float-right text-sm font-medium">{formatPrice(cartCalculation?.subTotalDiscounted)}</span>
                             </div>
                             <div className="mt-2">
                                 <span className="text-sm font-medium">Shipping</span>
-                                <span className="float-right text-sm font-medium">{formatPrice(cart?.calculation?.shippingTotal)}</span>
+                                <span className="float-right text-sm font-medium">{formatPrice(cartCalculation?.shippingTotal)}</span>
                             </div>
                             <div className="mt-2">
                                 <span className="text-sm font-medium">Tax</span>
-                                <span className="float-right text-sm font-medium">{formatPrice(cart?.calculation?.taxTotal)}</span>
+                                <span className="float-right text-sm font-medium">{formatPrice(cartCalculation?.taxTotal)}</span>
                             </div>
                             <Separator />
                             <div className="mt-2">
                                 <span className="text-sm font-medium">Total Payment</span>
-                                <span className="float-right font-semibold">{formatPrice(cart?.calculation?.total)}</span>
+                                <span className="float-right font-semibold">{formatPrice(cartCalculation?.total)}</span>
                             </div>
                         </CardContent>
                         <CardFooter>

@@ -2,17 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Saitrans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Lunar\DataTypes\Price;
-use Lunar\DataTypes\ShippingOption;
 use Lunar\Exceptions\InvalidDataTypeValueException;
 use Lunar\Facades\CartSession;
 use Lunar\Facades\Discounts;
+use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\ProductVariant;
-use Lunar\Models\TaxClass;
 
 class CartController extends Controller
 {
@@ -121,32 +118,17 @@ class CartController extends Controller
 
     /**
      * Set the shipping option for the cart.
-     * @throws InvalidDataTypeValueException
      */
     public function setShippingOption(string $identifier, ?Cart $cart = null)
     {
         $cart = $cart ?: CartSession::current();
 
-        $shippingOptions = Saitrans::getShippingOptions($cart);
+        $shippingOptions = ShippingManifest::getOptions($cart);
 
-        $shippingOption = collect($shippingOptions)->firstWhere('service.id', $identifier);
+        $shippingOption = collect($shippingOptions)->firstWhere('identifier', $identifier);
         if (!$shippingOption) {
             return redirect()->back()->withErrors(['shipping' => 'Shipping option not found.']);
         }
-        $price = new Price(
-            value: $shippingOption['price'],
-            currency: $cart->currency,
-        );
-        $shippingOption = new ShippingOption(
-            name: $shippingOption['service']['name'],
-            description: $shippingOption['service']['description'] ?? null,
-            identifier: $shippingOption['service']['id'],
-            price: $price,
-            taxClass: TaxClass::getDefault(),
-            collect: false,
-            meta: $shippingOption,
-        );
-//        dd($shippingOption);
         $cart->setShippingOption($shippingOption);
 
         return redirect()->back()->with('success', 'Shipping option set successfully.');

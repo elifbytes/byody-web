@@ -1,28 +1,22 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { usePrice } from '@/hooks/use-price';
 import { SharedData } from '@/types';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Minus, Plus, ShoppingCartIcon, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import AppLogo from './app-logo';
 import CartLineCard from './cart-line-card';
-import { Button, buttonVariants } from './ui/button';
+import { Button } from './ui/button';
 import { NotificationBadge } from './ui/notification-badge';
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import LoadingButton from '@/components/loading-button';
 
 function Cart() {
     const { getCartLinesPrice } = usePrice();
     const { cart } = usePage<SharedData>().props;
 
-    const {
-        put,
-        delete: destroy,
-        transform,
-        processing,
-    } = useForm({
-        cart_line_id: 0,
-        quantity: 0,
-    });
+    const {put, delete: destroy, transform, processing} = useForm({ cart_line_id: 0, quantity: 0, });
+    const { get, processing: checkingOut } = useForm();
 
     const handleUpdateQuantity = (lineId: number, quantity: number) => {
         transform((data) => ({
@@ -57,6 +51,10 @@ function Cart() {
             },
         });
     };
+
+    const checkout = () => {
+        get(route('orders.create'));
+    }
 
     return (
         <Sheet>
@@ -124,9 +122,9 @@ function Cart() {
                             <p className="text-sm font-medium">Total:</p>
                             <p className="text-right text-lg font-bold">{getCartLinesPrice(cart.lines)}</p>
                         </div>
-                        <Link className={buttonVariants({ className: 'mt-4 w-full' })} href={route('orders.create')}>
+                        <LoadingButton className='mt-4 w-full' loading={checkingOut} onClick={checkout}>
                             Checkout
-                        </Link>
+                        </LoadingButton>
                     </SheetFooter>
                 )}
             </SheetContent>

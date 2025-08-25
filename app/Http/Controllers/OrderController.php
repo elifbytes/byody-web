@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Facades\Saitrans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Lunar\Exceptions\Carts\CartException;
 use Lunar\Facades\CartSession;
+use Lunar\Facades\ShippingManifest;
 use Lunar\Models\Cart;
 use Lunar\Models\Country;
 use Lunar\Models\Order;
@@ -58,8 +58,16 @@ class OrderController extends Controller
         }
 
         $cart = $cart ?: CartSession::current();
+        // ensure the cart belongs to the current user
+        $user = request()->user();
+        if ($cart->user_id !== $user->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        $shippingOptions = ShippingManifest::getOptions($cart);
+        $cartShippingOption = $cart->getShippingOption();
+
         $cart->calculate();
-        $cart->calculation = [
+        $cartCalculation = [
             'total' => $cart->total,
             'subTotal' => $cart->subTotal,
             'subTotalDiscounted' => $cart->subTotalDiscounted,
@@ -75,14 +83,13 @@ class OrderController extends Controller
             'lines.purchasable.values.option'
         ]);
 
-        $cart->shipping_option = $cart->getShippingOption();
-        $shippingOptions = Saitrans::getShippingOptions($cart);
-
         return inertia('orders/create', [
             'cart' => $cart,
             'countries' => $countries,
             'addresses' => $customer ? $customer->addresses : [],
             'shippingOptions' => $shippingOptions,
+            'cartCalculation' => $cartCalculation,
+            'cartShippingOption' => $cartShippingOption,
         ]);
     }
 
@@ -104,13 +111,7 @@ class OrderController extends Controller
                 // set placed_at timestamp
                 $order->placed_at = now();
 
-                // $exchangeRates = Exchange::rates('USD', ['IDR']);
-                // $rates = $exchangeRates->getRates();
-                // $rate = $rates['IDR'];
-                // if (!$rate) {
-                //     throw new \Exception('Exchange rate not available for IDR');
-                // }
-                $amount = $order->total->decimal;
+                $amount = $order->total->decimal();
                 $createInvoice = new CreateInvoiceRequest([
                     'external_id' => $order->reference,
                     'amount' => $amount,
