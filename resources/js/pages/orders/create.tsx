@@ -171,7 +171,9 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                     <Heading title="Address Details" description="Select shipping address" />
                     <Dialog open={openAddAddressModal} onOpenChange={setOpenAddAddressModal}>
                         <DialogTrigger asChild>
-                            <Button className="mr-auto">Add New Address</Button>
+                            <Button className="mr-auto" onClick={() => reset()}>
+                                Add New Address
+                            </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>

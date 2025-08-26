@@ -15,13 +15,19 @@ import { Country } from '@/types/country';
 import { Head, useForm } from '@inertiajs/react';
 import { Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
+type FormData = Omit<Address, 'id'> & {
+    id?: number;
+};
 interface AddressProps {
     addresses?: Address[];
     countries: Country[];
 }
 export default function AddressPage({ addresses, countries }: AddressProps) {
-    const { data, setData, post, put, transform, reset, processing, errors } = useForm<Omit<Address, 'id'>>({
+    const [openCreate, setOpenCreate] = useState<boolean>(false);
+    const [openEdit, setOpenEdit] = useState<boolean>(false);
+    const { data, setData, post, put, transform, reset, processing, errors } = useForm<FormData>({
         contact_email: '',
         first_name: '',
         last_name: '',
@@ -40,25 +46,34 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
             onSuccess: () => {
                 toast.success('Address added successfully');
                 reset(); // Reset the form data
+                setOpenCreate(false); // Close the dialog
             },
             onError: (errors) => {
                 console.error('Error adding address:', errors);
                 toast.error('Failed to add address');
             },
-            preserveState: false,
         });
     };
 
-    const handleUpdateAddress = (addressId: number) => {
+    const handleEditAddress = (address: Address) => {
+        setData(address);
+        setOpenEdit(true);
+    }
+
+    const handleUpdateAddress = (addressId?: number) => {
+        if (!addressId) {
+            toast.error('Address ID is missing');
+            return;
+        }
         put(route('address.update', addressId), {
             onSuccess: () => {
                 toast.success('Address updated successfully');
+                setOpenEdit(false);
             },
             onError: (errors) => {
                 console.error('Error updating address:', errors);
                 toast.error('Failed to update address');
             },
-            preserveState: false,
         });
     };
 
@@ -67,7 +82,7 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
             <Head title="Address settings" />
             <SettingsLayout>
                 <HeadingSmall title="Address Settings" description="Manage your addresses for shipping and billing." />
-                <Dialog>
+                <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                     <DialogTrigger asChild>
                         <Button onClick={() => reset()}>Add New Address</Button>
                     </DialogTrigger>
@@ -84,6 +99,29 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
                         </LoadingButton>
                     </DialogContent>
                 </Dialog>
+
+                <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit Address</DialogTitle>
+                            <DialogDescription>
+                                Please update the form below to edit the address.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="h-[calc(100vh-200px)]">
+                            <AddressForm
+                                data={data}
+                                setData={setData}
+                                countries={countries}
+                                errors={errors}
+                            />
+                        </ScrollArea>
+                        <LoadingButton loading={processing} onClick={() => handleUpdateAddress(data.id)}>
+                            Save Address
+                        </LoadingButton>
+                    </DialogContent>
+                </Dialog>
+
                 {addresses && addresses.length > 0 ? (
                     <RadioGroup
                         value={addresses.find((a) => a.billing_default)?.id.toString()}
@@ -121,32 +159,9 @@ export default function AddressPage({ addresses, countries }: AddressProps) {
                                                         <div>{address.line_one}</div>
                                                     </CardDescription>
                                                     <CardAction>
-                                                        <Dialog>
-                                                            <DialogTrigger asChild>
-                                                                <Button variant="ghost" onClick={() => setData(address)}>
-                                                                    <Edit />
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                            <DialogContent>
-                                                                <DialogHeader>
-                                                                    <DialogTitle>Edit Address</DialogTitle>
-                                                                    <DialogDescription>
-                                                                        Please update the form below to edit the address.
-                                                                    </DialogDescription>
-                                                                </DialogHeader>
-                                                                <ScrollArea className="h-[calc(100vh-200px)]">
-                                                                    <AddressForm
-                                                                        data={data}
-                                                                        setData={setData}
-                                                                        countries={countries}
-                                                                        errors={errors}
-                                                                    />
-                                                                </ScrollArea>
-                                                                <LoadingButton loading={processing} onClick={() => handleUpdateAddress(address.id)}>
-                                                                    Save Address
-                                                                </LoadingButton>
-                                                            </DialogContent>
-                                                        </Dialog>
+                                                        <Button variant="ghost" onClick={() => handleEditAddress(address)}>
+                                                            <Edit />
+                                                        </Button>
                                                         <DeleteButton title="Address" route={route('address.destroy', address.id)}>
                                                             <Button variant="ghost" size="sm">
                                                                 <Trash className="text-destructive" />

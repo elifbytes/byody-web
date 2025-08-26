@@ -40,21 +40,7 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
-            'country_id' => ['required', 'exists:countries,id'],
-            'city' => ['required', 'string', 'max:100'],
-            'line_one' => ['required', 'string', 'max:255'],
-            'postcode' => ['required', 'string', 'max:20'],
-            'delivery_instructions' => ['nullable', 'string', 'max:255'],
-            'meta' => ['nullable', 'array'],
-            'meta.id' => ['required_with:meta', 'string', 'max:10'],
-            'meta.regency_id' => ['required_with:meta', 'string', 'max:10'],
-            'meta.name' => ['required_with:meta', 'string', 'max:255'],
-        ]);
+        $data = $this->validate($request);
 
         $customer = $request->user()->customers()->latest()->first();
         if (!$customer) {
@@ -118,25 +104,26 @@ class AddressController extends Controller
      */
     public function update(Request $request, Address $address)
     {
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'country_id' => ['required', 'exists:countries,id'],
-            'line_one' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'postcode' => ['required', 'string', 'max:20'],
-            'delivery_instructions' => ['nullable', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
-            'shipping_default' => ['nullable', 'boolean'],
-            'billing_default' => ['nullable', 'boolean'],
-        ]);
+        $data = $this->validate($request);
 
         if ($data['shipping_default'] && $data['billing_default']) {
             // Ensure only one address can be set as both shipping and billing default
             Address::where('customer_id', $address->customer_id)
                 ->where('id', '!=', $address->id)
                 ->update(['shipping_default' => false, 'billing_default' => false]);
+        }
+
+        $country = Country::find($data['country_id']);
+        if (!$country) {
+            return redirect()->back()->withErrors(['country_id' => 'Selected country does not exist.']);
+        }
+
+        if ($data['country_id'] != 104) {
+            // Clear meta for other countries
+            $data['meta'] = [
+                'id' => $country->iso2,
+                'name' => $country->name,
+            ];
         }
 
         $address->update([
@@ -151,6 +138,7 @@ class AddressController extends Controller
             'contact_phone' => $data['contact_phone'],
             'shipping_default' => $data['shipping_default'] ?? false,
             'billing_default' => $data['billing_default'] ?? false,
+            'meta' => $data['meta']
         ]);
 
         return redirect()->back();
@@ -163,5 +151,32 @@ class AddressController extends Controller
     {
         $address->delete();
         return redirect()->back();
+    }
+
+    /**
+     * @param Request $request
+     * @return array
+     */
+    public function validate(Request $request): array
+    {
+        return $request->validate([
+            'contact_email' => ['nullable', 'email', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],
+            'country_id' => ['required', 'exists:countries,id'],
+            'city' => ['required', 'string', 'max:100'],
+            'line_one' => ['required', 'string', 'max:255'],
+            'postcode' => ['required', 'string', 'max:20'],
+            'delivery_instructions' => ['nullable', 'string', 'max:255'],
+            'shipping_default' => ['sometimes', 'boolean'],
+            'billing_default' => ['sometimes', 'boolean'],
+            'meta' => ['required_if:country_id,104', 'array'],
+            'meta.id' => ['required_with:meta', 'string', 'max:10'],
+            'meta.regency_id' => ['nullable', 'string', 'max:10'],
+            'meta.name' => ['required_with:meta', 'string', 'max:255'],
+        ], [
+            'meta.required_if' => 'District is required when the selected country is Indonesia.',
+        ]);
     }
 }

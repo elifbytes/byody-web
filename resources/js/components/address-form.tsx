@@ -113,6 +113,7 @@ function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
                         }
                         minInputLength={3}
                     />
+                    <InputError message={errors.meta} />
                 </div>
             ) : null}
             <div>
