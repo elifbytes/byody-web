@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +12,7 @@ use Lunar\Base\LunarUser as LunarUserInterface;
 use Lunar\Base\Traits\LunarUser;
 use Lunar\Models\Customer;
 
-class User extends Authenticatable implements LunarUserInterface
+class User extends Authenticatable implements LunarUserInterface, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, LunarUser;
@@ -27,6 +28,7 @@ class User extends Authenticatable implements LunarUserInterface
         'phone',
         'password',
         'avatar',
+        'email_verified_at',
     ];
 
     /**

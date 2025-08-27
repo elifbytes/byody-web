@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('provider_id')->unique();
             $table->string('provider_name');
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

@@ -14,7 +14,7 @@ Route::get('products/{slug}', [ProductController::class, 'show'])->name('product
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::resource('carts', CartController::class);
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create/{cart?}', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');

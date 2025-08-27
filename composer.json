@@ -20,6 +20,7 @@
         "league/flysystem-aws-s3-v3": "^3.29",
         "lunarphp/lunar": "^1.0.1",
         "lunarphp/table-rate-shipping": "^1.0",
+        "resend/resend-laravel": "^0.21.0",
         "spatie/laravel-google-cloud-storage": "^2.3",
         "spatie/laravel-query-builder": "^6.3",
         "tightenco/ziggy": "^2.5",

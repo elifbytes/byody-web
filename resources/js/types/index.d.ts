@@ -33,6 +33,7 @@ export interface SharedData {
     collections: Collection[];
     exchangeRate?: number;
     currency?: string;
+    quote: { message: string; author: string };
     [key: string]: unknown;
 }
 

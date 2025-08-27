@@ -39,27 +39,21 @@ class SocialiteController extends Controller
             ->where('provider_name', $provider)
             ->first();
 
-        // Jika sudah ada
         if ($socialAccount) {
             // return user
             return $socialAccount->user;
-
-            // Jika belum ada
         } else {
-
-            // User berdasarkan email
             $user = User::where('email', $socialUser->getEmail())->first();
 
-            // Jika Tidak ada user
             if (!$user) {
-                // Create user baru
                 $user = User::create([
                     'name'  => $socialUser->getName(),
-                    'email' => $socialUser->getEmail()
+                    'email' => $socialUser->getEmail(),
+                    'email_verified_at' => now(),
+                    'avatar' => $socialUser->getAvatar(),
                 ]);
             }
 
-            // Buat Social Account baru
             $user->socialAccounts()->create([
                 'provider_id'   => $socialUser->getId(),
                 'provider_name' => $provider

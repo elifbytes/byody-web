@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Lunar\Facades\CartSession;
@@ -52,6 +53,8 @@ class HandleInertiaRequests extends Middleware
             $rate = $rates['IDR'];
         }
 
+        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -67,6 +70,7 @@ class HandleInertiaRequests extends Middleware
             'cart' => $cart,
             'exchangeRate' => $rate,
             'currency' => $currency,
+            'quote' => ['message' => trim($message), 'author' => trim($author)],
         ];
     }
 }
