@@ -8,7 +8,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Laravel\WorkOS\Http\Requests\AuthKitAccountDeletionRequest;
 
 class ProfileController extends Controller
 {

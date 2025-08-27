@@ -35,12 +35,6 @@ return [
         ],
     ],
 
-    'workos' => [
-        'client_id' => env('WORKOS_CLIENT_ID'),
-        'secret' => env('WORKOS_API_KEY'),
-        'redirect_url' => env('WORKOS_REDIRECT_URL'),
-    ],
-
     'xendit' => [
         'secret_key' => env('XENDIT_SECRET_KEY'),
         'callback_token' => env('XENDIT_CALLBACK_TOKEN'),
@@ -51,5 +45,11 @@ return [
         'email' => env('SAITRANS_EMAIL', 'test@mail.com'),
         'password' => env('SAITRANS_PASSWORD', 'test123'),
         'origin_id' => env('SAITRANS_ORIGIN_ID', '3628'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_CLIENT_REDIRECT'),
     ]
 ];

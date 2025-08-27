@@ -21,6 +21,10 @@ import { ArrowLeft, ChevronRight, Ticket } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+type FormData = Omit<Address, 'id'> & {
+    id?: number;
+};
+
 interface CreateOrderPageProps {
     addresses: Address[];
     countries: Country[];
@@ -35,7 +39,7 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
     const [openVoucherModal, setOpenVoucherModal] = useState<boolean>(false);
     const { formatPrice } = usePrice();
 
-    const { data, setData, post, put, reset, processing, errors } = useForm<Omit<Address, 'id'>>();
+    const { data, setData, post, put, reset, processing, errors } = useForm<FormData>();
     const {
         data: voucherData,
         setData: setVoucherData,
@@ -59,7 +63,16 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
         });
     };
 
-    const handleUpdateAddress = (addressId: number) => {
+    const handleEditAddress = (address: Address) => {
+        setData(address);
+        setOpenEditAddressModal(true);
+    };
+
+    const handleUpdateAddress = (addressId?: number) => {
+        if (!addressId) {
+            toast.error('Address ID is missing');
+            return;
+        }
         put(route('address.update', addressId), {
             onSuccess: () => {
                 toast.success('Address updated successfully');
@@ -188,6 +201,22 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                             </LoadingButton>
                         </DialogContent>
                     </Dialog>
+
+                    <Dialog open={openEditAddressModal} onOpenChange={setOpenEditAddressModal}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Edit Address</DialogTitle>
+                                <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
+                            </DialogHeader>
+                            <ScrollArea className="h-[calc(100vh-200px)]">
+                                <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
+                            </ScrollArea>
+                            <LoadingButton loading={processing} onClick={() => handleUpdateAddress(data.id)}>
+                                Save Changes
+                            </LoadingButton>
+                        </DialogContent>
+                    </Dialog>
+
                     <RadioGroup
                         value={cart?.shipping_address?.meta?.address_id?.toString() || ''}
                         onValueChange={(value) => {
@@ -211,25 +240,9 @@ export default function CreateOrderPage({ addresses, countries, cart, shippingOp
                                         </div>
                                     </div>
                                     <CardAction>
-                                        <Dialog open={openEditAddressModal} onOpenChange={setOpenEditAddressModal}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" className="mt-2 w-full" onClick={() => setData(address)}>
-                                                    Edit
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>Edit Address</DialogTitle>
-                                                    <DialogDescription>Edit the address details below and save your changes.</DialogDescription>
-                                                </DialogHeader>
-                                                <ScrollArea className="h-[calc(100vh-200px)]">
-                                                    <AddressForm data={data} setData={setData} countries={countries} errors={errors} />
-                                                </ScrollArea>
-                                                <LoadingButton loading={processing} onClick={() => handleUpdateAddress(address.id)}>
-                                                    Save Changes
-                                                </LoadingButton>
-                                            </DialogContent>
-                                        </Dialog>
+                                        <Button variant="outline" className="mt-2 w-full" onClick={() => handleEditAddress(address)}>
+                                            Edit
+                                        </Button>
                                     </CardAction>
                                 </CardHeader>
                             </Card>

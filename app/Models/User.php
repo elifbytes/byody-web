@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Lunar\Base\LunarUser as LunarUserInterface;
 use Lunar\Base\Traits\LunarUser;
-use Laravel\WorkOS\WorkOS;
-use WorkOS\UserManagement;
+use Lunar\Models\Customer;
 
 class User extends Authenticatable implements LunarUserInterface
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, LunarUser;
 
     /**
@@ -25,7 +25,7 @@ class User extends Authenticatable implements LunarUserInterface
         'name',
         'email',
         'phone',
-        'workos_id',
+        'password',
         'avatar',
     ];
 
@@ -35,7 +35,7 @@ class User extends Authenticatable implements LunarUserInterface
      * @var list<string>
      */
     protected $hidden = [
-        'workos_id',
+        'password',
         'remember_token',
     ];
 
@@ -52,23 +52,20 @@ class User extends Authenticatable implements LunarUserInterface
         ];
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::created(function ($user) {
-            WorkOS::configure();
-
-            $userManagement = new UserManagement();
-
-            $workOsUser = $userManagement->getUser(
-                $user->workos_id,
-            );
-
-            $customer = \Lunar\Models\Customer::create([
-                'first_name' => $workOsUser->firstName,
-                'last_name' => $workOsUser->lastName,
+            $customer = Customer::create([
+                'first_name' => $user->name,
+                'last_name' => '',
             ]);
 
             $customer->users()->attach($user);
         });
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
     }
 }

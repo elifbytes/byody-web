@@ -6,7 +6,6 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
-use Laravel\WorkOS\Http\Middleware\ValidateSessionWithWorkOS;
 use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
@@ -15,10 +14,7 @@ Route::get('products/{slug}', [ProductController::class, 'show'])->name('product
 Route::get('products', [ProductController::class, 'index'])->name('products.index');
 Route::resource('carts', CartController::class);
 
-Route::middleware([
-    'auth',
-    ValidateSessionWithWorkOS::class,
-])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('orders/create/{cart?}', [OrderController::class, 'create'])->name('orders.create');
     Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
