@@ -48,7 +48,7 @@ function AddressForm({ countries, setData, data, errors }: AddressFormProps) {
             <div>
                 <Label>Email</Label>
                 <Input
-                    placeholder="Email Address (optional)"
+                    placeholder="Email Address"
                     className="w-full"
                     value={data.contact_email}
                     onChange={(e) => setData('contact_email', e.target.value)}

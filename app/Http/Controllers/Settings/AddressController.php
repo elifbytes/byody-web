@@ -160,7 +160,7 @@ class AddressController extends Controller
     public function validate(Request $request): array
     {
         return $request->validate([
-            'contact_email' => ['nullable', 'email', 'max:255'],
+            'contact_email' => ['required', 'email', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'contact_phone' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\s\-()]+$/'],

@@ -45,6 +45,18 @@ return [
         'email' => env('SAITRANS_EMAIL', 'test@mail.com'),
         'password' => env('SAITRANS_PASSWORD', 'test123'),
         'origin_id' => env('SAITRANS_ORIGIN_ID', '3628'),
+        'sender_fullname' => env('SAITRANS_SENDER_FULLNAME', 'BY.ODY'),
+        'sender_email' => env('SAITRANS_SENDER_EMAIL', 'officialbyody@gmail.com'),
+        'sender_handphone' => env('SAITRANS_SENDER_HANDPHONE', '081234567890'),
+        'sender_identity_number' => env('SAITRANS_SENDER_IDENTITY_NUMBER', '1234567890123456'),
+        'sender_identity_type' => env('SAITRANS_SENDER_IDENTITY_TYPE', 'KTP'),
+        'sender_address' => env('SAITRANS_SENDER_ADDRESS', 'Gamping, Sleman'),
+        'sender_country_iso2' => env('SAITRANS_SENDER_COUNTRY_ISO2', 'ID'),
+        'sender_province' => env('SAITRANS_SENDER_PROVINCE', 'DI Yogyakarta'),
+        'sender_regency' => env('SAITRANS_SENDER_REGENCY', 'Sleman'),
+        'sender_district' => env('SAITRANS_SENDER_DISTRICT', 'Gamping'),
+        'sender_village' => env('SAITRANS_SENDER_VILLAGE', 'Baturan'),
+        'sender_postal_code' => env('SAITRANS_SENDER_POSTAL_CODE', '55291'),
     ],
 
     'google' => [

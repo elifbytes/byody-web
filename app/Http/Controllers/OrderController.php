@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Facades\Saitrans;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -104,8 +105,9 @@ class OrderController extends Controller
             ]);
 
             $cart = Cart::find($data['cart_id']) ?: CartSession::current();
+            $shipping = Saitrans::createOrder($cart);
 
-            DB::transaction(function () use ($cart) {
+            DB::transaction(function () use ($cart, $shipping) {
                 // TODO: Validate if stock is available
                 $order = $cart->createOrder();
                 // set placed_at timestamp
@@ -122,6 +124,8 @@ class OrderController extends Controller
                 $apiInstance = new InvoiceApi();
                 $generateInvoice = $apiInstance->createInvoice($createInvoice);
                 $order->meta = [
+                    'shipping_id' => $shipping['id'],
+                    'shipping_awb_number' => $shipping['awb_number'],
                     'invoice_id' => $generateInvoice->getId(),
                     'invoice_url' => $generateInvoice->getInvoiceUrl(),
                     'amount' => $amount,

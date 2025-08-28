@@ -6,7 +6,9 @@ use Exception;
 use Http;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
+use Lunar\Models\Address;
 use Lunar\Models\Cart;
+use Worksome\Exchange\Facades\Exchange;
 
 class SaitransService
 {
@@ -99,7 +101,94 @@ class SaitransService
             return [];
         }
         $destinationId = $shippingAddress->meta['destination_id'];
-        $goods = $cart->lines->map(fn($line) => [
+        $goods = $this->getGoods($cart);
+        try {
+            $SaitransShippingOptions = $this->getTariff('ID', config('services.saitrans.origin_id'), $destinationId, $goods, !is_numeric($destinationId));
+        } catch (ConnectionException|Exception $e) {
+            return [];
+        }
+        return $SaitransShippingOptions['data'];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function createOrder(Cart $cart): array
+    {
+        $shippingAddress = $cart->shippingAddress;
+        if (!$shippingAddress) {
+            if (!isset($shippingAddress->meta['destination_id']) || !isset($shippingAddress->meta['address_id'])) {
+                throw new Exception('Missing shippingAddress meta');
+            }
+            throw new Exception('Missing shippingAddress');
+        }
+        $destinationId = $shippingAddress->meta['destination_id'];
+        $destinationCountry = $shippingAddress->country;
+        if (!$destinationCountry) {
+            throw new Exception('Destination country not found');
+        }
+        $isExport = $destinationCountry->iso2 !== 'ID';
+        $shippingOption = $cart->getShippingOption();
+        if (!$shippingOption) {
+            throw new Exception('Missing shipping option');
+        }
+        $goods = $this->getGoods($cart);
+        $url = $this->base_url . '/api/v2/order/store';
+        $data = [
+            'sender_fullname' => config('services.saitrans.sender_fullname'),
+            'sender_email' => config('services.saitrans.sender_email'),
+            'sender_handphone' => config('services.saitrans.sender_handphone'),
+            'sender_identity_number' => config('services.saitrans.sender_identity_number'),
+            'sender_identity_type' => config('services.saitrans.sender_identity_type'),
+            'sender_address' => config('services.saitrans.sender_address'),
+            'sender_country_iso2' => config('services.saitrans.sender_country_iso2'),
+            'sender_province' => config('services.saitrans.sender_province'),
+            'sender_regency' => config('services.saitrans.sender_regency'),
+            'sender_district' => config('services.saitrans.sender_district'),
+            'sender_village' => config('services.saitrans.sender_village'),
+            'sender_postalcode' => config('services.saitrans.sender_postal_code'),
+            'recipient_fullname' => $shippingAddress->first_name . ' ' . $shippingAddress->last_name,
+            'recipient_email' => $shippingAddress->contact_email,
+            'recipient_handphone' => $shippingAddress->contact_phone,
+            'recipient_identity_number' => '-',
+            'recipient_identity_type' => '-',
+            'recipient_address' => $shippingAddress->line_one,
+            'recipient_country_iso2' => $destinationCountry->iso2,
+            'recipient_regency' => $shippingAddress->city,
+            'recipient_postalcode' => $shippingAddress->postcode,
+            'price_of_goods' => $cart->subTotal->value,
+            'vendor_service_id' => $shippingOption->identifier,
+            'origin_id' => config('services.saitrans.origin_id'),
+            'destination_id' => $destinationId,
+            'order_type' => $isExport ? 'export' : 'domestic',
+            'payment_method' => 'term_of_payment',
+            'goods' => $goods,
+        ];
+
+        if ($isExport) {
+            $exchangeRates = Exchange::rates($destinationCountry->currency, ['IDR']);
+            $rates = $exchangeRates->getRates();
+            $rate = $rates['IDR'];
+            $data['price_of_goods_destination'] = round($cart->subTotal->value / $rate, 2);
+            $data['currency_convert_to'] = $destinationCountry->currency;
+        }
+
+        $response = Http::withToken($this->access_token)->post($url, $data);
+        if ($response->successful()) {
+            return $response->json('data');
+        } else {
+
+            throw new Exception('Failed to create order: ' . $response->body());
+        }
+    }
+
+    /**
+     * @param Cart $cart
+     * @return mixed
+     */
+    public function getGoods(Cart $cart): array
+    {
+        return $cart->lines->map(fn($line) => [
             'goods_name' => $line->purchasable->product->translateAttribute('name'),
             'goods_type' => 'package',
             'qty' => $line->quantity,
@@ -108,11 +197,5 @@ class SaitransService
             'vol_width' => $line->purchasable->width->to('length.cm')->convert()->getValue(),
             'vol_height' => $line->purchasable->height->to('length.cm')->convert()->getValue(),
         ])->toArray();
-        try {
-            $SaitransShippingOptions = $this->getTariff('ID', config('services.saitrans.origin_id'), $destinationId, $goods, !is_numeric($destinationId));
-        } catch (ConnectionException|Exception $e) {
-            return [];
-        }
-        return $SaitransShippingOptions['data'];
     }
 }
