@@ -5,9 +5,11 @@ namespace App\Services;
 use Exception;
 use Http;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
-use Lunar\Models\Address;
+use Illuminate\Support\Facades\Storage;
 use Lunar\Models\Cart;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Worksome\Exchange\Facades\Exchange;
 
 class SaitransService
@@ -104,7 +106,7 @@ class SaitransService
         $goods = $this->getGoods($cart);
         try {
             $SaitransShippingOptions = $this->getTariff('ID', config('services.saitrans.origin_id'), $destinationId, $goods, !is_numeric($destinationId));
-        } catch (ConnectionException|Exception $e) {
+        } catch (ConnectionException|Exception) {
             return [];
         }
         return $SaitransShippingOptions['data'];
@@ -197,5 +199,58 @@ class SaitransService
             'vol_width' => $line->purchasable->width->to('length.cm')->convert()->getValue(),
             'vol_height' => $line->purchasable->height->to('length.cm')->convert()->getValue(),
         ])->toArray();
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function confirmOrder(string $awbNumber): string
+    {
+        $url = $this->base_url . '/api/v2/order/confirmation_order';
+        $data = [
+            'awb_number' => $awbNumber,
+        ];
+        $response = Http::withToken($this->access_token)->post($url, $data);
+        if ($response->successful()) {
+            return $response->json('message');
+        } else {
+            throw new Exception('Failed to confirm order: ' . $response->body());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getLabel(string $awbNumber): string
+    {
+        $url = $this->base_url . '/api/v2/order/label_goods';
+        $data = [
+            'awb_number' => $awbNumber,
+        ];
+        $response = Http::withToken($this->access_token)->post($url, $data);
+        if ($response->successful()) {
+            $filename = 'label_' . $awbNumber . '.pdf';
+            // Get the PDF content
+            $pdfContent = $response->body();
+
+            Storage::put('labels/' . $filename, $pdfContent);
+            return Storage::url('labels/' . $filename);
+        } else {
+            throw new Exception('Failed to get label: ' . $response->body());
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function track(string $awbNumber): array
+    {
+        $url = $this->base_url . '/api/v2/order/track';
+        $response = Http::withToken($this->access_token)->get($url . '/' . $awbNumber);
+        if ($response->successful()) {
+            return $response->json('data');
+        } else {
+            throw new Exception('Failed to track order: ' . $response->body());
+        }
     }
 }

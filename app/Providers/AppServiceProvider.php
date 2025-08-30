@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Filament\Resources\BannerResource;
+use App\Lunar\EditOrderExtension;
 use App\Modifiers\CustomShippingModifier;
 use App\PaymentTypes\XenditPayment;
 use Illuminate\Support\ServiceProvider;
+use Lunar\Admin\Filament\Resources\OrderResource\Pages\ManageOrder;
 use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Base\ShippingModifiers;
 use Lunar\Facades\ModelManifest;
@@ -25,8 +27,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         LunarPanel::panel(
-            fn($panel) =>
-            $panel
+            fn($panel) => $panel
                 ->path('admin')
                 ->resources([
                     BannerResource::class,
@@ -46,7 +47,9 @@ class AppServiceProvider extends ServiceProvider
                     'warning' => '#f5f5f5',
                     'info' => '#f5f5f5',
                 ])
-        )->register();
+        )->extensions([
+            ManageOrder::class => EditOrderExtension::class,
+        ])->register();
     }
 
     /**
