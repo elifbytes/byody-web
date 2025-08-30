@@ -24,7 +24,7 @@ class PaymentController extends Controller
 
         $order = Order::where('reference', $external_id)->first();
 
-        if (!$order) {
+        if ($order === null) {
             return response()->json([
                 'message' => 'Order not found',
             ], 404);
@@ -32,6 +32,7 @@ class PaymentController extends Controller
         if ($status === 'PAID') {
             $order->status = 'payment-received';
         }
+        $order->placed_at = now();
         $order->save();
 
         $order->transactions()->create([

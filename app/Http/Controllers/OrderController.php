@@ -110,8 +110,6 @@ class OrderController extends Controller
             DB::transaction(function () use ($cart, $shipping) {
                 // TODO: Validate if stock is available
                 $order = $cart->createOrder();
-                // set placed_at timestamp
-                $order->placed_at = now();
 
                 $amount = $order->total->decimal();
                 $createInvoice = new CreateInvoiceRequest([
